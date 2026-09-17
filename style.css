@@ -380,6 +380,11 @@ code {
   padding: 8px;
 }
 
+.gallery-slot:has(img) {
+  border-style: solid;
+  padding: 0;
+}
+
 .gallery-slot img {
   width: 100%;
   height: 100%;
