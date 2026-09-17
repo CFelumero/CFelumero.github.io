@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRAIN | Chris Felumero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <span class="mark">CF</span>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="projects.html" class="current">Projects</a>
+      <a href="experience.html">Experience</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="page-head">
+    <p class="field">Project | Senior Capstone, 2023</p>
+    <h1>TRAIN</h1>
+    <p>
+      TRAIN (Tracking Robot using Artificial Intelligence Navigation) is
+      a robot that finds, tracks, and autonomously navigates toward
+      objects using machine learning. I built it as my senior year
+      capstone project, researching how AI-driven robotics is changing
+      the workforce and building TRAIN as a working example of that
+      shift. This one never got its own GitHub repo, so the paper and
+      slides below are the record of it.
+    </p>
+    <div class="tags">
+      <span>Python</span><span>TensorFlow</span><span>Raspberry Pi</span>
+      <span>Computer Vision</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Hardware used</h2>
+    <ul>
+      <li>iRobot Create 2 (used as the robot base, interfaces with a Raspberry Pi and is programmable in Python)</li>
+      <li>Raspberry Pi 3 (runs the object tracking and navigation program)</li>
+      <li>Raspberry Pi Camera Module 2 NoIR (8MP, used for object detection)</li>
+      <li>PiJuice portable battery (lets the robot move untethered)</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>Photos</h2>
+    <div class="gallery">
+      <div class="gallery-slot"><img src="train-early-render.jpg" alt="Early labeled render of TRAIN showing the iRobot Create 2 base, Raspberry Pi 3, and camera module"></div>
+      <div class="gallery-slot"><img src="train-prototype.jpg" alt="First physical prototype of TRAIN with the camera and Raspberry Pi mounted on top of the robot base"></div>
+      <div class="gallery-slot"><img src="train-final-render.png" alt="Final render of TRAIN with the completed case design"></div>
+      <div class="gallery-slot"><img src="train-tracking.png" alt="Screenshot of the TensorFlow object tracking program drawing a bounding box around a tracked ball"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>How it works</h2>
+    <p>
+      TRAIN uses its camera to find an object, then uses machine
+      learning to figure out where that object is and drive toward it
+      on its own. I originally tried building this with color
+      recognition, tracking a specific shade of red. That fell apart
+      fast: the camera struggled to isolate the right hue without extra
+      lighting, and it kept picking up red from other sources in the
+      room, like skin tone. Lighting changes alone were enough to throw
+      off the color values entirely.
+    </p>
+    <p>
+      I switched to TensorFlow, an open-source machine learning library,
+      and had it track objects through a trained model instead of raw
+      color values. That held up far better. Along the way I also found
+      the camera was outputting video upside down, which needed a
+      software fix, and the Raspberry Pi 3 struggled to keep up,
+      dropping to about 2 frames per second. I sped that up by trimming
+      the program down and limiting how many objects it tried to track
+      at once.
+    </p>
+  </section>
+
+  <section class="section">
+    <h2>Timeline</h2>
+    <ul>
+      <li>Design completed: November 22, 2022</li>
+      <li>First prototype: December 7, 2022</li>
+      <li>Programming completed: December 28, 2022</li>
+      <li>Final product completed: December 29, 2022</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>Paper</h2>
+    <p>
+      My full capstone paper, covering the research on AI-driven
+      robotics in the workforce alongside the TRAIN build itself, is
+      embedded below.
+    </p>
+    <div class="doc-embed">
+      <object data="train-paper.pdf" type="application/pdf">
+        <p>Your browser can't display PDFs inline. <a href="train-paper.pdf">Download the paper</a> instead.</p>
+      </object>
+    </div>
+    <p><a href="train-paper.pdf">Download the paper (PDF)</a></p>
+  </section>
+
+  <section class="section">
+    <h2>Slides</h2>
+    <p>Slides from my capstone presentation.</p>
+    <div class="doc-embed">
+      <object data="train-slides.pdf" type="application/pdf">
+        <p>Your browser can't display PDFs inline. <a href="train-slides.pdf">Download the slides</a> instead.</p>
+      </object>
+    </div>
+    <p><a href="train-slides.pdf">Download the slides (PDF)</a></p>
+  </section>
+
+  <section class="section">
+    <h2>Credit</h2>
+    <p class="credit">Mentored by Kevin Monteith.</p>
+    <a href="projects.html">Back to all projects</a>
+  </section>
+
+</main>
+
+</body>
+</html>
