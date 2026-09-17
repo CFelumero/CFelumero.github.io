@@ -33,15 +33,48 @@
       The robot code for FIRST Robotics Team 5494, built on WPILib and
       managed with Gradle, for the 2023 FRC game Charged Up. I wrote this
       during my senior year of high school as a student on the team,
-      handling programming and strategy. This code was written in collaboration
-      with the team's head coach and programming mentor, Kevin Monteith,
-      however the bulk of the code was written and committed by myself over the
-      duration of the competition season.
+      handling programming and strategy.
     </p>
     <div class="tags">
       <span>Java</span><span>WPILib</span><span>Gradle</span>
     </div>
     <p><a href="https://github.com/kmonteith/Robot2023">View source on GitHub</a></p>
+  </section>
+
+  <section class="section">
+    <h2>My contributions</h2>
+
+    <h3>Control systems</h3>
+    <p>
+      I worked on the swerve drivetrain, including the joystick-driven
+      teleop control and a closed-loop auto-balance routine for the
+      charge station. That routine reads pitch off a Pigeon2 gyro and
+      feeds it into a proportional control loop that drives the robot
+      forward or backward to level itself out, without any driver input.
+      Each swerve module also runs its own PID loop to hold a commanded
+      wheel angle.
+    </p>
+
+    <h3>Automated scoring sequences</h3>
+    <p>
+      Scoring a game piece meant coordinating the arm, lifter, intake,
+      and grabber together. I wrote command groups that chain all of
+      that into a single button press: close the grabber on the piece,
+      raise the lifter and arm to the target height, release, then
+      return everything to a safe starting position. The same idea
+      carried into autonomous, where we built separate scoring and
+      mobility routines for each starting position on both alliance
+      colors.
+    </p>
+
+    <h3>PID controller tuning</h3>
+    <p>
+      Each arm and lifter mechanism runs its own PID loop through its
+      SparkMax motor controller, and I tuned the P and D gains for each
+      one individually, since the outer arm, inner arm, grabber, and
+      grabber pivot all behave differently under load and needed
+      different limits on output range to avoid overshooting.
+    </p>
   </section>
 
   <section class="section">
@@ -53,6 +86,22 @@
       programming and strategy. I now mentor the team in the same areas,
       along with scouting, design, and outreach.
     </p>
+  </section>
+
+  <section class="section">
+    <h2>Photos and video</h2>
+    <div class="gallery">
+      <div class="gallery-slot"><img src="robot-cad-1.png" alt="CAD render of the 2023 robot"></div>
+      <div class="gallery-slot"><img src="robot-cad-2.png" alt="CAD render of the 2023 robot, side angle"></div>
+      <div class="gallery-slot"><img src="robot-competition.jpeg" alt="The robot on the field at a competition, numbered 5494"></div>
+      <div class="gallery-slot"><img src="robot-workshop.jpeg" alt="The robot in the workshop during build season"></div>
+    </div>
+    <div class="doc-embed">
+      <video controls preload="metadata" style="width: 100%; display: block;">
+        <source src="robot-build.mp4" type="video/mp4">
+        Your browser doesn't support embedded video. <a href="robot-build.mp4">Download the video</a> instead.
+      </video>
+    </div>
   </section>
 
   <section class="section">
