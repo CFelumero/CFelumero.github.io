@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frogger Inspired Game Project | Chris Felumero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .game-wrap { max-width: 900px; }
+  .game-frame {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #87ceeb;
+    margin: 1rem 0;
+  }
+  #gameCanvas { display: block; width: 100%; height: auto; }
+  .game-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(15, 20, 15, 0.78);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 1rem;
+  }
+  .game-overlay button {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 22px;
+    cursor: pointer;
+  }
+  .game-controls {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 0.6rem;
+  }
+  .mobile-pad {
+    display: none;
+    grid-template-columns: repeat(3, 56px);
+    grid-template-rows: repeat(2, 56px);
+    gap: 6px;
+    justify-content: center;
+    margin: 1rem 0;
+  }
+  .mobile-pad button {
+    font-size: 1.1rem;
+    font-family: var(--font-mono);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--ink);
+  }
+  .pad-up { grid-column: 2; grid-row: 1; }
+  .pad-left { grid-column: 1; grid-row: 2; }
+  .pad-down { grid-column: 2; grid-row: 2; }
+  .pad-right { grid-column: 3; grid-row: 2; }
+  @media (max-width: 640px) { .mobile-pad { display: grid; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <span class="mark">CF</span>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="projects.html" class="current">Projects</a>
+      <a href="experience.html">Experience</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap game-wrap">
+
+  <section class="page-head">
+    <p class="field">Project</p>
+    <h1>Frogger Inspired Game Project</h1>
+    <p>
+      A road and river crossing arcade game I built in Python for a
+      class assignment, using the Arcade library for sprites,
+      collision, and sound. The version below runs that exact,
+      unmodified Python code in your browser through Pyodide (a build
+      of the real Python interpreter compiled to WebAssembly), not a
+      rewrite. The only new code is a small stand-in for the parts of
+      the <code>arcade</code> library that need an actual desktop
+      window, since a browser can't open one the way Python normally
+      does.
+    </p>
+    <div class="tags">
+      <span>Python</span><span>Arcade</span><span>Pyodide</span><span>WebAssembly</span>
+    </div>
+    <p><a href="https://github.com/CFelumero/cFelumeroProject8">View original Python source on GitHub</a></p>
+  </section>
+
+  <section class="section">
+    <h2>Play it</h2>
+    <p>
+      Get to the top of the screen without getting hit by a car or
+      falling in the river. Turtles will carry you across the water if
+      you land on one.
+    </p>
+
+    <div class="game-controls">
+      <span class="field">Move: Arrow keys or WASD &middot; Restart: any key after game over</span>
+    </div>
+
+    <div class="game-frame">
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
+      <div class="game-overlay" id="overlay">
+        <span id="overlayText">Loading the Python runtime&hellip;</span>
+        <button id="startBtn" type="button" style="display:none;">Start game</button>
+      </div>
+    </div>
+
+    <div class="mobile-pad">
+      <button class="pad-up" type="button" data-dir="up">&uarr;</button>
+      <button class="pad-left" type="button" data-dir="left">&larr;</button>
+      <button class="pad-down" type="button" data-dir="down">&darr;</button>
+      <button class="pad-right" type="button" data-dir="right">&rarr;</button>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>How this actually runs</h2>
+    <p>
+      <code>main.py</code>, <code>froggerFunctions.py</code>, and
+      <code>froggerHelper.py</code> here are byte-for-byte the same
+      files from my GitHub repo. They get loaded into Pyodide's virtual
+      file system and imported normally, exactly like running
+      <code>python main.py</code> locally. The one piece that's new is
+      <code>arcade.py</code>: a small shim that gives those files an
+      <code>arcade</code> module to import, where things like
+      <code>Sprite.draw()</code> or <code>arcade.play_sound()</code>
+      forward to JavaScript canvas and audio calls instead of opening a
+      native OpenGL window, since that's the one part of desktop Python
+      a browser genuinely can't do. All of the actual game logic, movement,
+      collision, spawning, and sprite flipping is running as originally
+      written.
+    </p>
+  </section>
+
+  <section class="section">
+    <a href="projects.html">Back to all projects</a>
+  </section>
+
+</main>
+
+<script type="module">
+import { loadPyodide } from './pyodide/pyodide.mjs';
+
+const overlay = document.getElementById('overlay');
+const overlayText = document.getElementById('overlayText');
+const startBtn = document.getElementById('startBtn');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = 1280, H = 720;
+
+function setOverlay(text, showStart) {
+  overlayText.textContent = text;
+  startBtn.style.display = showStart ? 'inline-block' : 'none';
+}
+
+// ---- asset preloading ----
+const PY_FILES = ['main.py', 'froggerFunctions.py', 'froggerHelper.py', 'arcade.py'];
+const IMAGE_PATHS = {
+  'sprites/left_car1.png': 'sprites/left_car1.png',
+  'sprites/left_car2.png': 'sprites/left_car2.png',
+  'sprites/right_car1.png': 'sprites/right_car1.png',
+  'sprites/turtle1.png': 'sprites/turtle1.png',
+  'sprites/watersprite.png': 'sprites/watersprite.png',
+  ':resources:/images/enemies/frog.png': 'sprites/player.png'
+};
+const SOUND_PATHS = {
+  'sounds/sound-frogger-hop.wav': 'sounds/sound-frogger-hop.wav',
+  'sounds/sound-frogger-squash.wav': 'sounds/sound-frogger-squash.wav',
+  'sounds/sound-frogger-plunk.wav': 'sounds/sound-frogger-plunk.wav',
+  'sounds/winsound.mp3': 'sounds/winsound.mp3',
+  'sounds/gameover.mp3': 'sounds/gameover.mp3'
+};
+
+const images = {};
+const sounds = {};
+
+function loadImage(key, src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve();
+    img.src = src;
+    images[key] = img;
+  });
+}
+
+function preloadSounds() {
+  Object.keys(SOUND_PATHS).forEach((key) => {
+    sounds[key] = new Audio(SOUND_PATHS[key]);
+  });
+}
+
+// ---- JS bridge functions the Python `arcade` shim calls into ----
+function toCanvasY(arcadeY) { return H - arcadeY; }
+
+window._getImageSize = function (key) {
+  const img = images[key];
+  if (!img || !img.naturalWidth) return [32, 32];
+  return [img.naturalWidth, img.naturalHeight];
+};
+
+window._drawRect = function (x, y, w, h, r, g, b) {
+  ctx.fillStyle = `rgb(${r},${g},${b})`;
+  ctx.fillRect(x, toCanvasY(y) - h, w, h);
+};
+
+window._drawSprite = function (key, cx, cy, w, h, angleDeg, flipped) {
+  const img = images[key];
+  if (!img || !img.naturalWidth) return;
+  ctx.save();
+  ctx.translate(cx, toCanvasY(cy));
+  if (angleDeg) ctx.rotate((angleDeg * Math.PI) / 180);
+  if (flipped) ctx.scale(-1, 1);
+  ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  ctx.restore();
+};
+
+window._drawText = function (text, x, y, r, g, b, size, anchor) {
+  ctx.fillStyle = `rgb(${r},${g},${b})`;
+  ctx.font = `bold ${size}px "IBM Plex Mono", monospace`;
+  ctx.textAlign = anchor === 'center' ? 'center' : 'left';
+  ctx.fillText(text, x, toCanvasY(y));
+  ctx.textAlign = 'left';
+};
+
+window._playSound = function (path) {
+  const s = sounds[path];
+  if (!s) return;
+  try {
+    const clone = s.cloneNode();
+    clone.play().catch(() => {});
+  } catch (e) {}
+};
+
+// ---- boot sequence ----
+async function boot() {
+  setOverlay('Loading the Python runtime\u2026', false);
+
+  const pyodide = await loadPyodide({ indexURL: './pyodide/' });
+
+  setOverlay('Loading game files and art\u2026', false);
+
+  const imgLoads = Object.keys(IMAGE_PATHS).map((key) => loadImage(key, IMAGE_PATHS[key]));
+  preloadSounds();
+
+  const fileTexts = await Promise.all(
+    PY_FILES.map((f) => fetch(f).then((r) => r.text()))
+  );
+  PY_FILES.forEach((f, i) => pyodide.FS.writeFile(f, fileTexts[i]));
+
+  await Promise.all(imgLoads);
+
+  pyodide.runPython(`
+import sys
+sys.path.insert(0, '.')
+import arcade
+import froggerHelper
+import froggerFunctions
+import main
+`);
+
+  // main.py's own main() function already constructed and set up the
+  // window; our arcade.Window shim registers every window it creates,
+  // so we just retrieve that same instance here. No text-editing of
+  // main.py needed at all.
+  const gameWindow = pyodide.runPython(`arcade._current_window`);
+  window.__gameWindow = gameWindow;
+
+  setOverlay('Ready.', true);
+
+  let running = false;
+  let lastTime = performance.now();
+
+  function frame(now) {
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
+    if (running) {
+      try {
+        gameWindow.on_update(dt);
+        gameWindow.on_draw();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  startBtn.addEventListener('click', () => {
+    gameWindow.setup();
+    running = true;
+    overlay.style.display = 'none';
+  });
+
+  function sendKey(key) {
+    if (!running) return;
+    try {
+      gameWindow.on_key_press(key, 0);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'];
+    if (keys.indexOf(e.key) !== -1) e.preventDefault();
+    sendKey(e.key);
+  });
+
+  document.querySelectorAll('.mobile-pad button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const dirMap = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
+      sendKey(dirMap[btn.getAttribute('data-dir')]);
+    });
+  });
+}
+
+boot().catch((e) => {
+  console.error(e);
+  setOverlay('Could not load the Python runtime. Check the console for details.', false);
+});
+</script>
+
+</body>
+</html>
