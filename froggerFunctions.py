@@ -13,7 +13,7 @@ class Player(arcade.Sprite):  # Class to represent the player
         self.lives = 3
 
 # vertical snap points of move_up and move_down
-vertical_positions = [64, 96, 180, 226, 277, 335, 370.5, 420, 483, 570, 659]
+vertical_positions = [64, 96, 180, 226, 277, 335, 370.5, 405, 483, 570, 659]
 # sound effects for game
 move_sound = arcade.load_sound("sounds/sound-frogger-hop.wav")
 hit_sound = arcade.load_sound("sounds/sound-frogger-squash.wav")

@@ -72,13 +72,15 @@ class Sprite:
         self._scale = 1.0
         self.texture = None
         self.textures = []
-        if filename:
-            w, h = _js._getImageSize(filename)
-            self._nat_w = w
-            self._nat_h = h
-        else:
-            self._nat_w = 64
-            self._nat_h = 64
+
+    def _current_image_key(self):
+        # Sprites like Player set .texture after construction (with no
+        # filename passed to __init__), so size/hitbox must be resolved
+        # from whichever texture is actually active right now, not
+        # cached from construction time.
+        if self.texture is not None:
+            return self.texture.image_key
+        return self._filename
 
     @property
     def scale(self):
@@ -90,11 +92,54 @@ class Sprite:
 
     @property
     def width(self):
-        return self._nat_w * self._scale
+        key = self._current_image_key()
+        if not key:
+            return 64 * self._scale
+        w, h = _js._getImageSize(key)
+        return w * self._scale
 
     @property
     def height(self):
-        return self._nat_h * self._scale
+        key = self._current_image_key()
+        if not key:
+            return 64 * self._scale
+        w, h = _js._getImageSize(key)
+        return h * self._scale
+
+    @property
+    def hb_width(self):
+        # Collision size: cropped to the sprite's actual non-transparent
+        # pixels, matching arcade's default "Simple" hit box algorithm,
+        # rather than the full (possibly padded) image bounds.
+        key = self._current_image_key()
+        if not key:
+            return 64 * self._scale
+        hb_w, hb_h, dx, dy = _js._getHitbox(key)
+        return hb_w * self._scale
+
+    @property
+    def hb_height(self):
+        key = self._current_image_key()
+        if not key:
+            return 64 * self._scale
+        hb_w, hb_h, dx, dy = _js._getHitbox(key)
+        return hb_h * self._scale
+
+    @property
+    def hb_center_x(self):
+        key = self._current_image_key()
+        if not key:
+            return self.center_x
+        hb_w, hb_h, dx, dy = _js._getHitbox(key)
+        return self.center_x + dx * self._scale
+
+    @property
+    def hb_center_y(self):
+        key = self._current_image_key()
+        if not key:
+            return self.center_y
+        hb_w, hb_h, dx, dy = _js._getHitbox(key)
+        return self.center_y + dy * self._scale
 
     def collides_with_sprite(self, other):
         return check_for_collision(self, other)
@@ -117,8 +162,8 @@ class SpriteList(list):
 
 
 def _overlap(a, b):
-    return (abs(a.center_x - b.center_x) * 2 < (a.width + b.width) and
-            abs(a.center_y - b.center_y) * 2 < (a.height + b.height))
+    return (abs(a.hb_center_x - b.hb_center_x) * 2 < (a.hb_width + b.hb_width) and
+            abs(a.hb_center_y - b.hb_center_y) * 2 < (a.hb_height + b.hb_height))
 
 
 def check_for_collision(a, b):
@@ -150,6 +195,11 @@ class Text:
     def draw(self):
         r, g, b = self.color
         _js._drawText(self.text, self.x, self.y, r, g, b, self.font_size, self.anchor_x)
+
+
+def draw_text(text, start_x, start_y, color_value=None, font_size=12, anchor_x="left", **kwargs):
+    r, g, b = color_value if color_value is not None else _Color.WHITE
+    _js._drawText(text, start_x, start_y, r, g, b, font_size, anchor_x)
 
 
 def start_render():

@@ -166,7 +166,7 @@
 </main>
 
 <script type="module">
-import { loadPyodide } from './pyodide/pyodide.mjs';
+import { loadPyodide } from './pyodide.mjs';
 
 const overlay = document.getElementById('overlay');
 const overlayText = document.getElementById('overlayText');
@@ -183,28 +183,87 @@ function setOverlay(text, showStart) {
 // ---- asset preloading ----
 const PY_FILES = ['main.py', 'froggerFunctions.py', 'froggerHelper.py', 'arcade.py'];
 const IMAGE_PATHS = {
-  'sprites/left_car1.png': 'sprites/left_car1.png',
-  'sprites/left_car2.png': 'sprites/left_car2.png',
-  'sprites/right_car1.png': 'sprites/right_car1.png',
-  'sprites/turtle1.png': 'sprites/turtle1.png',
-  'sprites/watersprite.png': 'sprites/watersprite.png',
-  ':resources:/images/enemies/frog.png': 'sprites/player.png'
+  'sprites/left_car1.png': 'left_car1.png',
+  'sprites/left_car2.png': 'left_car2.png',
+  'sprites/right_car1.png': 'right_car1.png',
+  'sprites/turtle1.png': 'turtle1.png',
+  'sprites/watersprite.png': 'watersprite.png',
+  ':resources:/images/enemies/frog.png': 'player.png'
 };
 const SOUND_PATHS = {
-  'sounds/sound-frogger-hop.wav': 'sounds/sound-frogger-hop.wav',
-  'sounds/sound-frogger-squash.wav': 'sounds/sound-frogger-squash.wav',
-  'sounds/sound-frogger-plunk.wav': 'sounds/sound-frogger-plunk.wav',
-  'sounds/winsound.mp3': 'sounds/winsound.mp3',
-  'sounds/gameover.mp3': 'sounds/gameover.mp3'
+  'sounds/sound-frogger-hop.wav': 'sound-frogger-hop.wav',
+  'sounds/sound-frogger-squash.wav': 'sound-frogger-squash.wav',
+  'sounds/sound-frogger-plunk.wav': 'sound-frogger-plunk.wav',
+  'sounds/winsound.mp3': 'winsound.mp3',
+  'sounds/gameover.mp3': 'gameover.mp3'
 };
 
 const images = {};
 const sounds = {};
+const hitboxes = {};
+
+// Offscreen canvas used to read pixel data for hitbox cropping
+const _hbCanvas = document.createElement('canvas');
+const _hbCtx = _hbCanvas.getContext('2d', { willReadFrequently: true });
+
+function computeHitbox(img) {
+  const w = img.naturalWidth, h = img.naturalHeight;
+  if (!w || !h) return { hbW: 32, hbH: 32, dx: 0, dy: 0 };
+  _hbCanvas.width = w;
+  _hbCanvas.height = h;
+  _hbCtx.clearRect(0, 0, w, h);
+  _hbCtx.drawImage(img, 0, 0);
+  let data;
+  try {
+    data = _hbCtx.getImageData(0, 0, w, h).data;
+  } catch (e) {
+    // canvas got tainted (shouldn't happen for same-origin files) - fall back to full bounds
+    return { hbW: w, hbH: h, dx: 0, dy: 0 };
+  }
+  let minX = w, minY = h, maxX = -1, maxY = -1, opaqueCount = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const alpha = data[(y * w + x) * 4 + 3];
+      if (alpha > 8) {
+        opaqueCount++;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return { hbW: w, hbH: h, dx: 0, dy: 0 }; // fully transparent image, fall back
+  let hbW = maxX - minX + 1;
+  let hbH = maxY - minY + 1;
+  // The bounding box of non-transparent pixels still includes empty
+  // corners for rounded/irregular shapes (arcade's real hit box traces
+  // the actual outline, not just a box). Approximate that with a
+  // fill-ratio-based shrink: how much of the box is actually opaque,
+  // converted from an area ratio to a linear one. Boxy sprites (cars)
+  // have a fill ratio near 1, so this leaves them essentially unchanged;
+  // rounded ones (the frog) shrink toward their real silhouette.
+  const fillRatio = opaqueCount / (hbW * hbH);
+  const shrink = Math.sqrt(Math.min(1, fillRatio));
+  hbW *= shrink;
+  hbH *= shrink;
+  // Offsets in arcade's y-up, sprite-center-relative space. Image (x,y) is
+  // top-down; convert the crop's center to a distance from the image
+  // center, then flip Y since "up" in image rows is toward y=0.
+  const cropCenterXFromImgCenter = ((minX + maxX) / 2) - (w / 2);
+  const cropCenterYFromImgCenterTopDown = ((minY + maxY) / 2) - (h / 2);
+  const dx = cropCenterXFromImgCenter;
+  const dy = -cropCenterYFromImgCenterTopDown;
+  return { hbW, hbH, dx, dy };
+}
 
 function loadImage(key, src) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => resolve();
+    img.onload = () => {
+      hitboxes[key] = computeHitbox(img);
+      resolve();
+    };
     img.onerror = () => resolve();
     img.src = src;
     images[key] = img;
@@ -224,6 +283,12 @@ window._getImageSize = function (key) {
   const img = images[key];
   if (!img || !img.naturalWidth) return [32, 32];
   return [img.naturalWidth, img.naturalHeight];
+};
+
+window._getHitbox = function (key) {
+  const hb = hitboxes[key];
+  if (!hb) return [32, 32, 0, 0];
+  return [hb.hbW, hb.hbH, hb.dx, hb.dy];
 };
 
 window._drawRect = function (x, y, w, h, r, g, b) {
@@ -263,7 +328,7 @@ window._playSound = function (path) {
 async function boot() {
   setOverlay('Loading the Python runtime\u2026', false);
 
-  const pyodide = await loadPyodide({ indexURL: './pyodide/' });
+  const pyodide = await loadPyodide({ indexURL: './' });
 
   setOverlay('Loading game files and art\u2026', false);
 
