@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go Notes | Chris Felumero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f7f3;
+    --surface: #ffffff;
+    --ink: #202a22;
+    --muted: #62705f;
+    --line: #dae0d6;
+    --accent: #6c4a9c;
+    --accent-soft: #efe9f7;
+    --font-display: "Archivo", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  header.top {
+    border-bottom: 1px solid var(--line);
+    padding: 1.6rem 24px;
+  }
+  header.top h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  header.top p { margin: 0; color: var(--muted); font-family: var(--font-mono); font-size: 0.82rem; }
+
+  .search-bar {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--line);
+    z-index: 5;
+    grid-column: 1 / -1;
+  }
+  #search {
+    width: 100%;
+    max-width: 560px;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+  #search:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+  #resultCount { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-left: 10px; }
+
+  nav.toc {
+    border-right: 1px solid var(--line);
+    padding: 20px 16px;
+    align-self: start;
+    position: sticky;
+    top: 64px;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+  nav.toc a {
+    display: block;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 5px 8px;
+    border-radius: 4px;
+  }
+  nav.toc a:hover { background: var(--accent-soft); color: var(--accent); }
+
+  main { padding: 24px 32px 80px; min-width: 0; }
+
+  .note {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 1.3rem 1.5rem;
+    margin-bottom: 1.1rem;
+    scroll-margin-top: 74px;
+  }
+  .note.hidden { display: none; }
+  .note h2 { margin: 0 0 0.6rem; font-size: 1.15rem; }
+  .note h3 { margin: 1.1rem 0 0.4rem; font-size: 0.95rem; color: var(--accent); }
+  .note p { margin: 0 0 0.8rem; max-width: 72ch; }
+  .note ul { margin: 0 0 0.8rem; padding-left: 1.2rem; }
+  .note li { margin-bottom: 0.3rem; max-width: 68ch; }
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 9px;
+    margin: 0 4px 6px 0;
+  }
+  .src {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    border-radius: 999px;
+    padding: 2px 9px;
+    margin: 0 4px 6px 0;
+    border: 1px solid;
+  }
+  .src-notes    { color: #3f8a4c; border-color: #3f8a4c; }
+  .src-slides   { color: #3d72b4; border-color: #3d72b4; }
+  .src-inclass  { color: #b4763d; border-color: #b4763d; }
+  .src-external { color: #6c4a9c; border-color: #6c4a9c; }
+  .src-key {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 4px;
+    align-items: center;
+    margin-top: 10px;
+  }
+  pre {
+    background: #1c2418;
+    color: #e7ecdf;
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.55;
+    margin: 0 0 0.8rem;
+  }
+  code { font-family: var(--font-mono); }
+  p code, li code {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+  .no-results {
+    text-align: center;
+    color: var(--muted);
+    padding: 3rem 0;
+    font-family: var(--font-mono);
+  }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { display: none; }
+    main { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Go Language Notes</h1>
+  <p>Reference notes from COMP335: syntax, types, control flow, and functions</p>
+  <div class="src-key">
+    Source key:
+    <span class="src src-notes">personal notes</span>
+    <span class="src src-slides">slideshow</span>
+    <span class="src src-inclass">in-class assignment</span>
+    <span class="src src-external">external</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="Search notes (e.g. slice, defer, for-range, struct)&hellip;" autocomplete="off">
+    <span id="resultCount"></span>
+  </div>
+
+  <nav class="toc" id="toc"></nav>
+
+  <main id="notes">
+
+    <section class="note" id="overview">
+      <span class="tag">basics</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>What Go is</h2>
+      <p>
+        Go was built at Google by Robert Griesemer, Rob Pike, and Ken
+        Thompson, and it's open source under a BSD-style license (roughly:
+        use it freely, no warranty). The headline features:
+      </p>
+      <ul>
+        <li><strong>Compiled</strong>: source turns into a native binary, not bytecode that gets interpreted.</li>
+        <li><strong>Statically typed</strong>: a variable always refers to the same type of value.</li>
+        <li><strong>Structurally typed</strong>: two types are equivalent if their structure matches, not because they share a name.</li>
+        <li><strong>Memory safe</strong>: no buffer overflows, no unsafe pointer arithmetic.</li>
+        <li><strong>Garbage collected</strong>: you don't manually free memory.</li>
+        <li><strong>Built around concurrency</strong>: this is one of Go's biggest selling points.</li>
+      </ul>
+      <p>
+        The overall feel: Go wants there to be exactly one right way to do
+        something, and the compiler enforces it. Things Python only warns
+        about (an unused variable, an unused import) are flat-out compile
+        errors in Go.
+      </p>
+    </section>
+
+    <section class="note" id="gofmt">
+      <span class="tag">basics</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Style is compiler-enforced (and gofmt)</h2>
+      <p>
+        A lot of languages have "flame wars" about the right way to
+        format code, indent, name things, and so on. Go mostly sidesteps
+        this by making the compiler itself reject non-idiomatic patterns
+        rather than just warning about them: an unused import or an
+        unused local variable is a hard compile error, not a lint
+        suggestion.
+      </p>
+      <p>
+        On top of that, Go ships with <code>gofmt</code>, a tool that
+        automatically rewrites your source into the one canonical
+        formatting style (spacing, brace placement, alignment). Most
+        editors run it on save, so arguments about tabs vs. spaces or
+        brace placement mostly don't happen in Go.
+      </p>
+      <pre><code>gofmt -w main.go   // rewrite main.go in place to standard style</code></pre>
+    </section>
+
+    <section class="note" id="comments">
+      <span class="tag">basics</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Comments</h2>
+      <p>Same syntax as C++ and Java:</p>
+      <pre><code>// a single-line comment
+
+/*
+   a multi-line
+   comment block
+*/</code></pre>
+    </section>
+
+    <section class="note" id="types">
+      <span class="tag">types</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Basic types</h2>
+      <p>
+        Go splits types into basic/predefined types and everything else
+        (structs, custom types, etc). The basic types are booleans,
+        strings, and a family of number types:
+      </p>
+      <pre><code>bool
+string
+
+int8    int16   int32   int64   int
+uint8   uint16  uint32  uint64  uint
+byte    // alias for uint8
+rune    // alias for int32, holds one Unicode code point
+
+float32 float64</code></pre>
+      <p>
+        Unless you have a specific reason to size things down (network
+        protocols, matching a C struct layout, etc.), you'll mostly just
+        use <code>int</code>, <code>float64</code>, <code>string</code>,
+        and <code>bool</code>.
+      </p>
+    </section>
+
+    <section class="note" id="literals">
+      <span class="tag">types</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Literals</h2>
+      <p>
+        A literal is a value typed directly into the source code, like
+        <code>42</code> or <code>"hello"</code>. Go has default types for
+        each kind of literal:
+      </p>
+      <ul>
+        <li>Integer literals default to <code>int</code>, base 10. Prefix with <code>0x</code> for hex, <code>0b</code> for binary, <code>0o</code> for octal.</li>
+        <li>Floating point literals default to <code>float64</code>.</li>
+      </ul>
+      <h3>Interpreted vs. raw string literals</h3>
+      <p>
+        Double-quoted strings are "interpreted": escape sequences
+        like <code>\t</code> and <code>\n</code> get replaced with the
+        actual tab/newline character. Backtick strings are "raw," and
+        nothing gets replaced, so a backslash-t is genuinely two
+        characters, not a tab.
+      </p>
+      <pre><code>a := "this \t has a tab \n and a newline"
+// interpreted: the \t and \n become real characters
+
+b := `this \t has a tab \n and a newline`
+// raw: the backslashes stay literal, nothing is replaced</code></pre>
+      <h3>Runes</h3>
+      <p>
+        A single character (technically, a Unicode code point) is called
+        a <strong>rune</strong> in Go. <code>rune</code> is just an alias
+        for <code>int32</code>, since a Unicode code point fits in 32
+        bits.
+      </p>
+      <pre><code>var r rune = 'A'
+fmt.Println(r)        // 65 (the numeric code point)
+fmt.Println(string(r)) // "A"</code></pre>
+    </section>
+
+    <section class="note" id="type-conversion">
+      <span class="tag">types</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Type conversion</h2>
+      <p>
+        Python auto-promotes numbers as needed. Java will auto-widen a
+        less precise type to a more precise one when it's on the right
+        side of an assignment (an <code>int</code> can silently become a
+        <code>float</code>, but not the reverse). Go does neither.
+        it wants everything explicit. Converting a value is done by
+        calling the target type like a function:
+      </p>
+      <pre><code>var x float64 = 34.5
+var y float32 = 13.2
+
+z := x + float64(y) // must convert y explicitly, or this won't compile</code></pre>
+      <p>
+        Literals are the one exception: they're untyped until assigned,
+        so they can be coerced into a more precise type automatically.
+      </p>
+      <pre><code>var x float64 = 3.5
+y := x * 10 // fine, 10 gets treated as a float64 literal here
+
+var z int = 10.4     // compile error, this loses precision
+var a int = "a string" // compile error, wrong type entirely</code></pre>
+    </section>
+
+    <section class="note" id="variables">
+      <span class="tag">basics</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Variables</h2>
+      <p>There are two main ways to create a variable in Go:</p>
+      <pre><code>// short form, := infers the type, only works inside a function
+x, y := 12, 20
+
+// var form, works at package level or inside a function
+var x, y int = 12, 20</code></pre>
+      <p>
+        With <code>:=</code>, at least one name on the left has to be
+        new, and the others can be existing variables getting a new
+        value. With <code>var</code>, every name must be new, and all of
+        them must be the same type.
+      </p>
+      <p>
+        If you declare a variable without a value, it gets that type's
+        <strong>zero value</strong> automatically: <code>0</code>
+        for numbers, <code>""</code> for strings, <code>false</code> for
+        booleans, <code>nil</code> for pointers/slices/maps.
+      </p>
+      <pre><code>var count int    // count is 0
+var name string  // name is ""</code></pre>
+      <p>
+        Go also treats an unused local variable as a compile error, not a
+        warning, and the same goes for an unused import. That rule is
+        specifically about local variables, though: an unused
+        package-level variable (one declared outside any function) is
+        allowed.
+      </p>
+    </section>
+
+    <section class="note" id="constants">
+      <span class="tag">basics</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Constants</h2>
+      <p>
+        Use <code>const</code> for an immutable, compile-time value. Go's
+        naming convention for constants is the same as for regular
+        variables (not ALL_CAPS like Java/C++), because in Go,
+        capitalization actually controls export visibility rather than
+        signaling "this is a constant."
+      </p>
+      <pre><code>const x int32 = 50
+
+const (
+    Left  = true
+    Right = false
+)</code></pre>
+    </section>
+
+    <section class="note" id="arrays">
+      <span class="tag">collections</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Arrays</h2>
+      <p>
+        An array in Go is a fixed-size, sequential block of memory holding
+        elements of the same type. The size is actually part of the type
+        in fact, <code>[4]int</code> and <code>[10]int</code> are two
+        different types, not the same type with a different length. That
+        makes arrays fast, but restrictive: a function that takes a
+        <code>[4]int</code> can't also accept a <code>[10]int</code>.
+      </p>
+      <pre><code>var directions = [4]int{1, 2, 3, 4}
+directions[1] = 10 // still only ever 4 slots
+
+var zeroed [4]int // all four elements start at the zero value</code></pre>
+      <p>
+        Because of that restriction, almost nobody uses raw arrays
+        directly in Go. Slices (below) are what people actually
+        reach for.
+      </p>
+    </section>
+
+    <section class="note" id="slices">
+      <span class="tag">collections</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Slices</h2>
+      <p>
+        A slice is a resizable view into an underlying array, the
+        closest thing Go has to Python's list or Java's ArrayList. Every
+        slice tracks three things: a pointer to an element in an array,
+        a <strong>length</strong> (how many elements are in the slice),
+        and a <strong>capacity</strong> (how far the underlying array
+        goes before it needs to be reallocated).
+      </p>
+      <pre><code>var empty []int      // zero value of a slice is nil, len(empty) == 0
+
+names := make([]string, 5, 10)
+// type string, length 5, capacity 10
+// if you omit the capacity, it defaults to match the length</code></pre>
+      <h3>Adding to a slice</h3>
+      <p>Use <code>append</code>, which returns a (possibly new) slice:</p>
+      <pre><code>names = append(names, "Santore")               // one value
+names = append(names, "Jung", "Black", "Sattar") // several values
+
+names2 := []string{"Li", "Kim"}
+names = append(names, names2...) // spread another slice into append</code></pre>
+      <h3>Slicing syntax</h3>
+      <p>
+        Go also supports Python-style slicing with <code>start:end</code>
+        inside the brackets. This creates a new slice header that still
+        points at the same underlying data, so changing one can
+        affect the other.
+      </p>
+      <pre><code>names := []string{"Santore", "Jung", "Black", "Sattar", "Li"}
+firstThree := names[:3] // Santore, Jung, Black
+lastTwo := names[3:]    // Sattar, Li</code></pre>
+      <h3>Slices as parameters</h3>
+      <p>
+        Slices are passed by value like everything else in Go, but since
+        the "value" is really just the pointer/length/capacity triple,
+        you can still mutate the underlying array's contents through a
+        slice parameter. You just can't reassign what the
+        caller's slice variable points to.
+      </p>
+    </section>
+
+    <section class="note" id="console">
+      <span class="tag">io</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Console input and output</h2>
+      <p>
+        Writing to the console uses <code>fmt.Println</code> or
+        <code>fmt.Print</code>, with values separated by commas:
+      </p>
+      <pre><code>fmt.Println("Score:", score, "Lives:", lives)</code></pre>
+      <p>Reading input takes two steps: wrap stdin in a buffered reader, then call one of its read methods.</p>
+      <pre><code>reader := bufio.NewReader(os.Stdin)
+line, err := reader.ReadString('\n')
+// reads until the user presses Enter</code></pre>
+    </section>
+
+    <section class="note" id="maps">
+      <span class="tag">collections</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Maps</h2>
+      <p>
+        Go's maps are hash tables, working much like a Python dictionary.
+        Keys have to be a comparable type (anything you could use
+        <code>==</code> on); values can be any type.
+      </p>
+      <pre><code>wages := make(map[string]float32)
+
+// or build one with a literal
+wages := map[string]float32{
+    "Ed":  450.17,
+    "Ann": 375.99,
+}</code></pre>
+      <p>
+        Looking up a key that isn't in the map doesn't error. It
+        just returns the zero value for the value type. If you need to
+        tell "the value really is zero" apart from "the key wasn't
+        there," use the comma-ok form:
+      </p>
+      <pre><code>earnings, ok := wages["John"]
+// earnings == 0.0, ok == false, since "John" isn't a key</code></pre>
+    </section>
+
+    <section class="note" id="structs">
+      <span class="tag">types</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Structs</h2>
+      <p>
+        A struct is a collection of named, typed fields,
+        essentially the same idea as a C struct or a plain data class.
+      </p>
+      <pre><code>type Player struct {
+    Name         string
+    Health       int
+    JumpDistance int
+}
+
+var p1 Player          // zero value for every field
+p1.JumpDistance = 3    // access fields like you would in C</code></pre>
+      <h3>Struct literals</h3>
+      <pre><code>p2 := Player{"Mario", 1, 2}                 // positional
+p3 := Player{Name: "Luigi", Health: 1}      // by field name, JumpDistance stays 0</code></pre>
+      <h3>Exporting: capitalization matters</h3>
+      <p>
+        Unlike naming conventions in most languages, capitalization in Go
+        is functional: a capitalized struct or field name is exported
+        (visible outside its package); a lowercase one is package-private.
+        <code>Player</code> above is exported, but a lowercase field like
+        <code>jumpDistance</code> wouldn't be reachable from another
+        package.
+      </p>
+      <h3>Nesting and embedding</h3>
+      <p>
+        A struct can hold another struct as a named field (no recursive
+        definitions allowed, though. You'd need a pointer for
+        that):
+      </p>
+      <pre><code>type SaveGame struct {
+    P    Player
+    Size int
+}
+
+save := SaveGame{P: p1, Size: 128}
+fmt.Println(save.P.Name) // reach through the nested struct</code></pre>
+      <p>
+        Go also supports <strong>embedding</strong>: including a struct
+        type with no field name promotes its fields up to the outer
+        struct, so you can skip the intermediate name:
+      </p>
+      <pre><code>type SaveGame struct {
+    Player // embedded, no field name
+    Size   int
+}
+
+save := SaveGame{Player: p1, Size: 128}
+fmt.Println(save.Name) // Player's fields are promoted - no save.Player.Name needed</code></pre>
+    </section>
+
+    <section class="note" id="statements">
+      <span class="tag">basics</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>How a statement ends</h2>
+      <p>
+        A quick language comparison worth having straight for a quiz:
+      </p>
+      <ul>
+        <li>Java (and C/C++/C#): every statement ends with a semicolon <code>;</code>.</li>
+        <li>Python: a statement ends at the end of the line, no punctuation needed.</li>
+        <li>
+          Go: also ends at the end of the line, and semicolons are
+          "optional" in the sense that you almost never type one
+          yourself. Behind the scenes, the compiler scans each line and
+          automatically inserts a semicolon after it where one is
+          needed, so the result behaves like Java under the hood while
+          reading like Python on the page. <code>gofmt</code> will strip
+          out any semicolons you do type by hand.
+        </li>
+      </ul>
+    </section>
+
+    <section class="note" id="if">
+      <span class="tag">control flow</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>if / else</h2>
+      <p>
+        No parentheses around the condition, but the braces are
+        mandatory even for a one-line body.
+      </p>
+      <pre><code>if num := 9; num < 0 {
+    fmt.Println(num, "is negative")
+} else if num < 10 {
+    fmt.Println(num, "has 1 digit")
+} else {
+    fmt.Println(num, "has multiple digits")
+}</code></pre>
+      <p>
+        That <code>num := 9;</code> part is an init statement. A
+        variable declared there is scoped to the whole if/else if/else
+        chain, available in every branch.
+      </p>
+    </section>
+
+    <section class="note" id="for">
+      <span class="tag">control flow</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>for (and no while)</h2>
+      <p>
+        Go collapses definite and indefinite repetition into a single
+        keyword: <code>for</code>. There's no separate <code>while</code>.
+      </p>
+      <h3>Classic three-part for</h3>
+      <pre><code>for counter := 10; counter > 0; counter-- {
+    fmt.Println(counter)
+}
+fmt.Println("blastoff")</code></pre>
+      <h3>While-style (condition only)</h3>
+      <p>Drop the init and post parts and you get what other languages call a while loop:</p>
+      <pre><code>sum := 1
+for sum < 1000 {
+    sum += sum
+}
+fmt.Println(sum)</code></pre>
+      <h3>The forever loop</h3>
+      <pre><code>for {
+    // runs until something inside calls break
+}</code></pre>
+      <h3>break and continue</h3>
+      <p>
+        <code>break</code> exits the innermost <code>for</code>,
+        <code>switch</code>, or <code>select</code>. <code>continue</code>
+        skips to the next iteration without finishing the current one.
+        Both work the same as in C-family languages.
+      </p>
+    </section>
+
+    <section class="note" id="for-range">
+      <span class="tag">control flow</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>for-range</h2>
+      <p>
+        The modern way to iterate over a collection, similar to Python's
+        <code>for x in items</code> or Java's enhanced for loop:
+      </p>
+      <pre><code>names := []string{"Santore", "Jung", "Black"}
+for i, name := range names {
+    fmt.Println(i, name)
+}
+// first variable is the index (or key, for a map)
+// second variable is the value</code></pre>
+      <h3>Things that trip people up</h3>
+      <ul>
+        <li>
+          Iterating over a <strong>map</strong> returns entries in a
+          different order every run, on purpose. It's a defense
+          against hash-flooding attacks where someone crafts keys that
+          all land in the same bucket.
+        </li>
+        <li>
+          The values you get from <code>for-range</code> are <strong>copies</strong>
+          of the location and value in the collection. If you mutate the
+          loop variable, the original collection doesn't change.
+          you have to index back into it to update the source.
+        </li>
+        <li>
+          Iterating over a <code>string</code> yields runes, not bytes,
+          so multi-byte characters won't throw off your indexing the way
+          a byte-by-byte loop would.
+        </li>
+      </ul>
+      <h3>The blank identifier</h3>
+      <p>
+        An unused local variable is a compile error in Go, so if you only
+        want the value and not the index (or vice versa), use
+        <code>_</code> to explicitly throw the other one away:
+      </p>
+      <pre><code>for _, name := range names {
+    fmt.Println(name) // don't care about the index here
+}</code></pre>
+      <p>
+        <strong>Never use <code>_</code> to discard an error return
+        value</strong>. That silently swallows exactly the thing
+        you're supposed to be checking.
+      </p>
+    </section>
+
+    <section class="note" id="switch">
+      <span class="tag">control flow</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>switch</h2>
+      <p>
+        Works like a C/Java switch, but simpler: no fall-through by
+        default, so no <code>break</code> needed at the end of each case.
+        Any comparable type can be a switch value.
+      </p>
+      <pre><code>switch answer {
+case "yes":
+    fmt.Println("You have answered correctly")
+case "no":
+    fmt.Println("Consider being a team player")
+case "maybe":
+    fmt.Println("I'll ask again after lunch")
+}</code></pre>
+      <h3>Blank switch</h3>
+      <p>
+        Leave out the value after <code>switch</code> and each
+        <code>case</code> becomes its own boolean condition instead of an
+        equality check, which is handy for ranges or substring checks:
+      </p>
+      <pre><code>switch {
+case strings.Contains(answer, "yes"):
+    fmt.Println("Matched a yes-ish answer")
+case strings.Contains(answer, "no"):
+    fmt.Println("Matched a no-ish answer")
+default:
+    fmt.Println("Not sure")
+}</code></pre>
+    </section>
+
+    <section class="note" id="functions">
+      <span class="tag">functions</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Functions</h2>
+      <p>
+        Declared with <code>func</code>. The return type comes
+        <em>after</em> the parameter list (unlike Java/C++, but like
+        Python's <code>-&gt;</code> style). The opening brace has to be
+        on the same line as the signature. Go doesn't let you
+        argue about that one.
+      </p>
+      <pre><code>func add(x int, y int) int {
+    return x + y
+}</code></pre>
+      <p>
+        A function that has no return type doesn't need
+        <code>return</code> at all, but you can still use a bare
+        <code>return</code> with no value to exit early, partway
+        through the function body:
+      </p>
+      <pre><code>func printPositive(n int) {
+    if n <= 0 {
+        fmt.Println("not positive, skipping")
+        return // exits early, no value needed
+    }
+    fmt.Println(n)
+}</code></pre>
+      <h3>Multiple return values</h3>
+      <p>
+        Go leans on multi-value returns heavily, especially for the
+        "result, error" pattern used throughout the standard library:
+      </p>
+      <pre><code>func divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+
+result, err := divide(10, 2)
+if err != nil {
+    log.Fatal(err)
+}</code></pre>
+      <p>
+        The standard library leans on this constantly. <code>net/http</code>'s
+        <code>Get</code> function, for example, has this exact shape:
+      </p>
+      <pre><code>func Get(url string) (resp *Response, err error)
+
+resp, err := http.Get("https://example.com")
+if err != nil {
+    log.Fatal(err)
+}
+defer resp.Body.Close()</code></pre>
+      <h3>Named return values ("naked return")</h3>
+      <p>
+        You can name the return values in the signature; they start at
+        their zero value and you can just <code>return</code> with no
+        arguments once they're set. Considered a bit old-fashioned/frowned
+        on by more recent Go style, but you'll still see it:
+      </p>
+      <pre><code>func factorial(n int) (answer int, err error) {
+    if n < 0 {
+        err = errors.New("can't take factorial of a negative number")
+        return
+    }
+    answer = 1
+    for ; n > 0; n-- {
+        answer *= n
+    }
+    return // "naked" return - sends back answer and err as they stand
+}</code></pre>
+    </section>
+
+    <section class="note" id="first-class-functions">
+      <span class="tag">functions</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Functions as values</h2>
+      <p>
+        Functions are first-class values in Go, same as in Python or
+        Rust (unlike Java or C/C++ before lambdas were bolted on). You
+        can assign a function to a variable, pass it as a parameter, or
+        return it from another function.
+      </p>
+      <h3>Closures</h3>
+      <p>A function defined inside another function can capture variables from the enclosing scope:</p>
+      <pre><code>func main() {
+    factor := 5
+    multiply := func(x, y int) int {
+        return factor * (x + y)
+    }
+    fmt.Println(multiply(1, 1)) // 10
+}</code></pre>
+      <h3>Anonymous functions</h3>
+      <p>A function used as a value doesn't need a name at all:</p>
+      <pre><code>func counter() func() int {
+    count := 0
+    return func() int {
+        count++
+        return count
+    }
+}
+
+next := counter()
+fmt.Println(next()) // 1
+fmt.Println(next()) // 2</code></pre>
+      <h3>Functions as parameters</h3>
+      <p>Standard library functions like <code>strings.Map</code> take a function as an argument:</p>
+      <pre><code>shift := func(r rune) rune {
+    if r >= 'a' && r <= 'z' {
+        return 'a' + (r-'a'+1)%26
+    }
+    return r
+}
+fmt.Println(strings.Map(shift, "abcxyz")) // "bcdyza"</code></pre>
+      <p>
+        Functions aren't comparable with <code>==</code> (so they can't
+        be used as map keys), but they can always be compared to
+        <code>nil</code>, which is a function's zero value.
+      </p>
+      <h3>Function types have to match exactly</h3>
+      <p>
+        Go is strongly typed even for functions: a variable's function
+        type is defined by its parameter types and return type, and a
+        reassignment has to match precisely, not just "close enough."
+      </p>
+      <pre><code>var op func(int64, int64) int64
+op = func(x, y int64) int64 {
+    return x + y
+} // compiles: int64 params and return match exactly
+
+op = func(x, y int) int {
+    return x + y
+} // does NOT compile: int != int64, even though the logic is identical</code></pre>
+    </section>
+
+    <section class="note" id="defer">
+      <span class="tag">functions</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>defer</h2>
+      <p>
+        <code>defer</code> schedules a function call to run right before
+        the current function returns, whether it returns normally,
+        falls off the end, or panics. It's mainly used to guarantee
+        cleanup (closing a file, unlocking a mutex) happens no matter how
+        the function exits, without repeating the cleanup call at every
+        return point.
+      </p>
+      <pre><code>func readConfig(path string) error {
+    f, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer f.Close() // runs no matter which return below fires
+
+    // ... use f ...
+    return nil
+}</code></pre>
+      <p>
+        Multiple <code>defer</code> calls in one function run in
+        last-in-first-out order, like a stack. Watch out for
+        <code>defer</code> inside a loop, though. The deferred
+        calls all stack up and don't actually run until the whole
+        function returns, not at the end of each loop iteration, which
+        can hold resources open far longer than intended.
+      </p>
+      <pre><code>func readAll(paths []string) {
+    for _, p := range paths {
+        f, err := os.Open(p)
+        if err != nil {
+            continue
+        }
+        defer f.Close() // BAD: none of these run until readAll itself returns,
+        // so every file in the loop stays open the whole time, not just
+        // while it's being used
+    }
+}</code></pre>
+      <p>
+        The fix is usually to move the loop body into its own function
+        (or an anonymous function called immediately), so each
+        <code>defer</code> fires at the end of that smaller scope
+        instead of piling up until the very end.
+      </p>
+    </section>
+
+    <section class="note" id="errors">
+      <span class="tag">functions</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Errors</h2>
+      <p>
+        Go doesn't have exceptions. Instead, a function that can fail
+        returns an <code>error</code> as its last return value, by
+        convention. Since Go won't let you leave a declared variable
+        unused, you're effectively forced to at least look at the error:
+      </p>
+      <pre><code>resp, err := http.Get("https://example.com")
+if err != nil {
+    log.Fatal(err)
+}
+defer resp.Body.Close()</code></pre>
+      <p>
+        Don't use <code>_</code> to throw away an error return value.
+        It'll compile, but it means a real failure just vanishes
+        silently instead of being handled, which is considered a serious
+        anti-pattern in Go.
+      </p>
+    </section>
+
+    <section class="note" id="files">
+      <span class="tag">io</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Reading a text file</h2>
+      <pre><code>func readLines(path string) ([]string, error) {
+    contents, err := os.ReadFile(path)
+    if err != nil {
+        return nil, err
+    }
+    text := string(contents)
+    return strings.Split(text, "\n"), nil
+}</code></pre>
+      <p>This returns one string per line, similar to Python's <code>readlines()</code>.</p>
+    </section>
+
+    <section class="note" id="clean-string">
+      <span class="tag">io</span>
+      <span class="src src-external">external</span>
+      <h2>Utility: stripping punctuation from a string</h2>
+      <p>
+        A handy one-off shown in the slideshow, sourced from
+        <a href="https://gosamples.dev/remove-non-alphanumeric/" target="_blank" rel="noopener">gosamples.dev</a>,
+        for cleaning up text before processing it (useful before
+        splitting a file into words, for example). It uses a compiled
+        regular expression to strip anything that isn't a letter, digit,
+        or space.
+      </p>
+      <pre><code>var nonAlphanumeric = regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
+
+func cleanString(s string) string {
+    return nonAlphanumeric.ReplaceAllString(s, "")
+}
+
+cleanString("Hello, world!!") // "Hello world"</code></pre>
+    </section>
+
+    <section class="note" id="first-project">
+      <span class="tag">example</span>
+      <span class="src src-inclass">in-class assignment</span>
+      <h2>First in-class project: reading a slice of structs</h2>
+      <p>
+        The first project of the semester: a loop that repeatedly asks
+        for a class name, instructor, and credit count, packs each
+        answer into a <code>Classes</code> struct, and appends it to a
+        slice. It stops as soon as the user's answer to "add another
+        class?" isn't <code>"yes"</code>, then prints the whole slice
+        with a numbered <code>for-range</code> loop.
+      </p>
+      <p>
+        It also shows two things worth noticing: <code>strings.TrimSpace</code>
+        to strip the trailing newline that <code>ReadString('\n')</code>
+        leaves on the input, and <code>strconv.Atoi</code> to turn the
+        typed-in credit count from a string into an <code>int</code>.
+      </p>
+      <pre><code>package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type Classes struct {
+	className       string
+	instructorName  string
+	numberOfCredits int
+}
+
+func main() {
+	classes := make([]Classes, 0)
+	reader2 := bufio.NewReader(os.Stdin)
+	for {
+		nextClass := Classes{}
+		fmt.Println("Please enter a name for the class")
+		className, err := reader2.ReadString('\n')
+		println(err)
+		nextClass.className = strings.TrimSpace(className)
+		fmt.Println("Please enter a name for the instructor")
+		instructors, err := reader2.ReadString('\n')
+		nextClass.instructorName = strings.TrimSpace(instructors)
+		fmt.Println("Please enter a number for the credit number")
+		number, err := reader2.ReadString('\n')
+		number = strings.TrimSpace(number)
+		numberInt, err := strconv.Atoi(number) //trim newline
+		nextClass.numberOfCredits = numberInt
+		classes = append(classes, nextClass)
+		fmt.Println("Do you want to add another class?(yes/no)")
+		answer, err := reader2.ReadString('\n')
+		answer = strings.TrimSpace(answer)
+		if answer != "yes" {
+			break
+		}
+	}
+	for i, class := range classes {
+		fmt.Printf("%d. %s, instructor: %s, credits: %d\n", i+1, class.className, class.instructorName, class.numberOfCredits)
+	}
+}</code></pre>
+    </section>
+
+    <section class="note" id="example-project">
+      <span class="tag">example</span>
+      <span class="src src-inclass">in-class assignment</span>
+      <h2>In-class example: print every other line</h2>
+      <p>
+        A small program that reads a text file and prints only the
+        odd-indexed lines (every other line starting from the second
+        one). It uses <code>os.ReadFile</code> plus
+        <code>strings.Split</code> to get the file into a slice of
+        lines, then a <code>for-range</code> loop with the modulo
+        operator to pick out every other entry.
+      </p>
+
+      <div class="code-tabs">
+        <div class="code-tab-buttons">
+          <button class="code-tab-btn active" data-tab="maingo">main.go</button>
+          <button class="code-tab-btn" data-tab="sillyrec">sillyRec</button>
+        </div>
+        <div class="code-tab-panel active" data-panel="maingo">
+<pre><code>package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	allLines := getFile()
+	for i, line := range allLines {
+		if i%2 == 1 {
+			fmt.Println(line)
+		}
+	}
+}
+
+func getFile() []string {
+	contents, err := os.ReadFile("sillyRec")
+	if err != nil {
+		fmt.Println("File reading error", err)
+		return nil
+	}
+	bigString := string(contents)
+	allLines := strings.Split(bigString, "\n")
+	return allLines
+}</code></pre>
+        </div>
+        <div class="code-tab-panel" data-panel="sillyrec">
+<pre><code>Administrative Office Memo, March 15
+
+Peter Parker, my assistant programmer, can always be found
+hard at work in his cubicle. Peter works independently, without
+wasting company time talking to co-workers. Peter never
+thinks twice about assisting fellow employees, and he always
+finishes his assignments on time. Peter often takes extra
+measures to complete his work, sometimes skipping coffee
+breaks. Peter is a dedicated individual who has absolutely no
+vanity in spite of his high accomplishments and profound
+knowledge in his field. I firmly believe that Peter can be
+classed as a high-caliber employee, the type which cannot be
+dispensed with. Consequently, I duly recommend that Peter be
+promoted to executive management, and a proposal will be
+sent away as soon as possible.
+
+Administration Manager,
+Chester Church</code></pre>
+        </div>
+      </div>
+
+      <p>
+        Reading only the odd lines of <code>sillyRec</code> turns it
+        into a classic "hidden message" trick letter: the even lines
+        read as a glowing recommendation, but the odd lines spell out
+        something very different underneath. It's a fun test case
+        because it makes the every-other-line logic obvious as soon as
+        you run it.
+      </p>
+    </section>
+
+  </main>
+</div>
+
+<style>
+  .code-tabs { margin-top: 0.6rem; }
+  .code-tab-buttons {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0;
+  }
+  .code-tab-btn {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    padding: 7px 14px;
+    color: var(--muted);
+    cursor: pointer;
+    position: relative;
+    top: 1px;
+  }
+  .code-tab-btn.active {
+    background: #1c2418;
+    color: #e7ecdf;
+    border-color: #1c2418;
+  }
+  .code-tab-panel { display: none; }
+  .code-tab-panel.active { display: block; }
+  .code-tab-panel pre { margin: 0; border-radius: 0 6px 6px 6px; }
+</style>
+<script>
+(function () {
+  document.querySelectorAll('.code-tabs').forEach((tabs) => {
+    const buttons = tabs.querySelectorAll('.code-tab-btn');
+    const panels = tabs.querySelectorAll('.code-tab-panel');
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buttons.forEach((b) => b.classList.remove('active'));
+        panels.forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        tabs.querySelector('[data-panel="' + btn.dataset.tab + '"]').classList.add('active');
+      });
+    });
+  });
+})();
+</script>
+
+<script>
+(function () {
+  const notes = Array.from(document.querySelectorAll('.note'));
+  const toc = document.getElementById('toc');
+  const searchInput = document.getElementById('search');
+  const resultCount = document.getElementById('resultCount');
+
+  // Build table of contents from note headings
+  notes.forEach((note) => {
+    const heading = note.querySelector('h2');
+    const link = document.createElement('a');
+    link.href = '#' + note.id;
+    link.textContent = heading.textContent;
+    toc.appendChild(link);
+  });
+
+  let noResultsEl = document.createElement('div');
+  noResultsEl.className = 'no-results';
+  noResultsEl.textContent = 'No notes match that search.';
+  noResultsEl.style.display = 'none';
+  document.getElementById('notes').appendChild(noResultsEl);
+
+  function runSearch() {
+    const query = searchInput.value.trim().toLowerCase();
+    let visibleCount = 0;
+
+    notes.forEach((note) => {
+      const text = note.innerText.toLowerCase();
+      const matches = query === '' || text.includes(query);
+      note.classList.toggle('hidden', !matches);
+      if (matches) visibleCount++;
+    });
+
+    resultCount.textContent = query ? (visibleCount + ' of ' + notes.length + ' sections') : '';
+    noResultsEl.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+
+  searchInput.addEventListener('input', runSearch);
+})();
+</script>
+
+</body>
+</html>
