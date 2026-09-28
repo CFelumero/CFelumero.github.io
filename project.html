@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project | Chris Felumero</title>
+
+<!-- Bootstrap CSS (for the grid system used below) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Site-wide external stylesheet (already contains its own @media rules) -->
+<link rel="stylesheet" href="style.css">
+
+<!-- Embedded CSS specific to this page, not inline styles -->
+<style>
+  .proj-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.2rem 1.3rem;
+    height: 100%;
+  }
+  .proj-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    margin: 0 0 6px;
+  }
+  .proj-card p {
+    font-size: 0.92rem;
+    color: var(--ink);
+    margin: 0;
+  }
+  .group-project-box {
+    background: var(--accent-soft, var(--surface));
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+    padding: 1.4rem 1.6rem;
+  }
+
+  /* Page-specific responsive rule: stack the group-project box's
+     internal layout and tighten spacing on small screens */
+  @media only screen and (max-width: 576px) {
+    .proj-card { padding: 1rem; }
+    .group-project-box { padding: 1.1rem 1.2rem; }
+    h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <span class="mark">CF</span>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="projects.html">Projects</a>
+      <a href="experience.html">Experience</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container my-5">
+
+  <section class="mb-5">
+    <p class="field">Assignment 2</p>
+    <h1>Project</h1>
+    <p>
+      A list of the computer science projects I've worked on so far, plus
+      a description of my idea for the COMP335 final project.
+    </p>
+  </section>
+
+  <!-- Bootstrap grid: row/col classes, responsive at sm/md breakpoints -->
+  <section class="mb-5">
+    <h2 class="mb-3">Projects so far</h2>
+    <div class="row g-3">
+
+      <div class="col-12 col-sm-6 col-lg-4">
+        <div class="proj-card">
+          <h3>Greenwall</h3>
+          <p>
+            A self-watering hydroponic wall built at the BSU Think Tank,
+            for the campus makerspace. 24 plant cells across 4 sections,
+            monitored by 4 Arduino Megas and controlled by a Raspberry
+            Pi running a Flask backend. I did the software and
+            electrical design.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-4">
+        <div class="proj-card">
+          <h3>RideShareApp</h3>
+          <p>
+            A JavaFX ride-sharing app built for a class assignment, with
+            login, profile management, ride requests, map
+            visualization, and payment handling, structured with MVC.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-4">
+        <div class="proj-card">
+          <h3>Frogger inspired game project</h3>
+          <p>
+            A road and river crossing arcade game built in Python with
+            the Arcade library, for a class assignment. Later ported so
+            the same unmodified Python code runs live in the browser
+            through Pyodide.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-4">
+        <div class="proj-card">
+          <h3>Robot2023</h3>
+          <p>
+            Robot code for FIRST Robotics Team 5494's 2023 season,
+            Charged Up, built on WPILib. I wrote this as a student on
+            the team during senior year of high school, for fun and
+            competition.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-4">
+        <div class="proj-card">
+          <h3>TRAIN</h3>
+          <p>
+            My senior capstone project: a robot that tracks and
+            autonomously navigates toward objects using TensorFlow and a
+            Raspberry Pi, researching how AI-driven robotics is changing
+            the workforce.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="mb-5">
+    <h2 class="mb-3">COMP335 final group project idea</h2>
+    <div class="group-project-box">
+      <h3>GitHub profile viewer</h3>
+      <p>
+        My idea for the final project is a GitHub profile viewer: you
+        search a GitHub username, and the page shows that person's
+        public profile information and list of repositories.
+      </p>
+      <p>
+        I picked this because it's simple to scope, doesn't need any
+        account or API key to work, and there's no risk of it breaking
+        during a demo.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>

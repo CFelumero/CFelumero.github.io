@@ -41,36 +41,13 @@
   header.top h1 { margin: 0 0 4px; font-size: 1.6rem; }
   header.top p { margin: 0; color: var(--muted); font-family: var(--font-mono); font-size: 0.82rem; }
 
-  .search-bar {
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    padding: 14px 24px;
-    border-bottom: 1px solid var(--line);
-    z-index: 5;
-    grid-column: 1 / -1;
-  }
-  #search {
-    width: 100%;
-    max-width: 560px;
-    font-family: var(--font-mono);
-    font-size: 0.95rem;
-    padding: 10px 14px;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--surface);
-    color: var(--ink);
-  }
-  #search:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
-  #resultCount { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-left: 10px; }
-
   nav.toc {
     border-right: 1px solid var(--line);
     padding: 20px 16px;
     align-self: start;
     position: sticky;
-    top: 64px;
-    max-height: calc(100vh - 64px);
+    top: 0;
+    max-height: 100vh;
     overflow-y: auto;
   }
   nav.toc a {
@@ -91,9 +68,8 @@
     border-radius: 8px;
     padding: 1.3rem 1.5rem;
     margin-bottom: 1.1rem;
-    scroll-margin-top: 74px;
+    scroll-margin-top: 16px;
   }
-  .note.hidden { display: none; }
   .note h2 { margin: 0 0 0.6rem; font-size: 1.15rem; }
   .note h3 { margin: 1.1rem 0 0.4rem; font-size: 0.95rem; color: var(--accent); }
   .note p { margin: 0 0 0.8rem; max-width: 72ch; }
@@ -151,12 +127,7 @@
     border-radius: 4px;
     font-size: 0.88em;
   }
-  .no-results {
-    text-align: center;
-    color: var(--muted);
-    padding: 3rem 0;
-    font-family: var(--font-mono);
-  }
+
   @media (max-width: 800px) {
     .layout { grid-template-columns: 1fr; }
     nav.toc { display: none; }
@@ -179,11 +150,6 @@
 </header>
 
 <div class="layout">
-
-  <div class="search-bar">
-    <input type="text" id="search" placeholder="Search notes (e.g. slice, defer, for-range, struct)&hellip;" autocomplete="off">
-    <span id="resultCount"></span>
-  </div>
 
   <nav class="toc" id="toc"></nav>
 
@@ -1176,8 +1142,6 @@ Chester Church</code></pre>
 (function () {
   const notes = Array.from(document.querySelectorAll('.note'));
   const toc = document.getElementById('toc');
-  const searchInput = document.getElementById('search');
-  const resultCount = document.getElementById('resultCount');
 
   // Build table of contents from note headings
   notes.forEach((note) => {
@@ -1188,29 +1152,8 @@ Chester Church</code></pre>
     toc.appendChild(link);
   });
 
-  let noResultsEl = document.createElement('div');
-  noResultsEl.className = 'no-results';
-  noResultsEl.textContent = 'No notes match that search.';
-  noResultsEl.style.display = 'none';
-  document.getElementById('notes').appendChild(noResultsEl);
-
-  function runSearch() {
-    const query = searchInput.value.trim().toLowerCase();
-    let visibleCount = 0;
-
-    notes.forEach((note) => {
-      const text = note.innerText.toLowerCase();
-      const matches = query === '' || text.includes(query);
-      note.classList.toggle('hidden', !matches);
-      if (matches) visibleCount++;
-    });
-
-    resultCount.textContent = query ? (visibleCount + ' of ' + notes.length + ' sections') : '';
-    noResultsEl.style.display = visibleCount === 0 ? 'block' : 'none';
-  }
-
-  searchInput.addEventListener('input', runSearch);
 })();
+
 </script>
 
 </body>
