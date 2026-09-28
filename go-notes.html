@@ -98,6 +98,7 @@
   .src-slides   { color: #3d72b4; border-color: #3d72b4; }
   .src-inclass  { color: #b4763d; border-color: #b4763d; }
   .src-external { color: #6c4a9c; border-color: #6c4a9c; }
+  .src-practice { color: #a3364a; border-color: #a3364a; }
   .src-key {
     font-family: var(--font-mono);
     font-size: 0.75rem;
@@ -146,6 +147,7 @@
     <span class="src src-slides">slideshow</span>
     <span class="src src-inclass">in-class assignment</span>
     <span class="src src-external">external</span>
+    <span class="src src-practice">practice question</span>
   </div>
 </header>
 
@@ -1085,6 +1087,328 @@ Chester Church</code></pre>
         something very different underneath. It's a fun test case
         because it makes the every-other-line logic obvious as soon as
         you run it.
+      </p>
+    </section>
+
+    <section class="note" id="practice-intro">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice questions: how to use these</h2>
+      <p>
+        Six practice questions with answers, written to match the
+        kinds of questions on the quiz: trace what code prints, fix code
+        so it compiles, and explain how you would solve something. Each
+        one lists the notes that help and then the full answer.
+      </p>
+      <h3>Habits that catch most mistakes</h3>
+      <ul>
+        <li>Write out a trace table for loops: one row per pass, with the value before and after.</li>
+        <li>Ask "did this change the original, or only a copy?" (<code>for-range</code>, function parameters).</li>
+        <li>Ask "when does this line actually run?" (<code>defer</code>).</li>
+        <li>Ask "is every declared variable and import used?" Unused ones will not compile.</li>
+      </ul>
+    </section>
+
+    <section class="note" id="practice-1">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 1: what does this print? (loop trace)</h2>
+      <pre><code>sum := 1
+for ; sum &lt; 100; {
+    sum += sum
+}
+fmt.Println(sum)</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>Go has only <code>for</code>. Dropping the init and post parts makes it a while loop.</li>
+        <li>The condition is checked before each pass, so the body can push the value past the limit.</li>
+      </ul>
+      <h3>Answer: 128</h3>
+      <pre><code>sum before   sum after   condition checked first
+1            2            1 &lt; 100 true
+2            4            2 &lt; 100 true
+4            8            4 &lt; 100 true
+8            16           8 &lt; 100 true
+16           32           16 &lt; 100 true
+32           64           32 &lt; 100 true
+64           128          64 &lt; 100 true
+128          (stops)      128 &lt; 100 false</code></pre>
+      <p>
+        <code>sum += sum</code> doubles the value, so it never lands on
+        100 or 101. 64 is still below 100, so the loop runs one more
+        time and overshoots to 128. The condition decides whether to
+        enter another pass. It does not cap the value.
+      </p>
+    </section>
+
+    <section class="note" id="practice-2">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 2: fix the code (mixed types)</h2>
+      <pre><code>var x float64 = 34.5
+var y float32 = 13.2
+z := x + y
+fmt.Println(z)</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>Java converts less precise types to more precise ones automatically. Go makes you convert explicitly.</li>
+        <li>Conversion is written like a function call: <code>float64(y)</code>.</li>
+        <li><code>:=</code> takes the type from the right side.</li>
+      </ul>
+      <h3>Answer</h3>
+      <p>
+        It does not compile because <code>float64</code> and
+        <code>float32</code> are different types, and Go will not mix
+        them in one expression. Two valid fixes:
+      </p>
+      <pre><code>// Fix A: convert inside the expression
+z := x + float64(y)
+
+// Fix B: declare y as float64 to begin with
+var y float64 = 13.2
+z := x + y</code></pre>
+      <p>
+        In both cases <code>z</code> is a <code>float64</code>. The term
+        to use is "explicit type conversion."
+      </p>
+    </section>
+
+    <section class="note" id="practice-3">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 3: for-range copies (what prints, and how to fix the intent)</h2>
+      <pre><code>nums := []int{1, 2, 3}
+for _, n := range nums {
+    n = n * 2
+}
+fmt.Println(nums)</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>The values <code>for-range</code> gives you are copies of the location and the value, not the originals.</li>
+        <li>To change the original collection, use the index to write back into it.</li>
+        <li><code>_</code> discards a value you do not want, which avoids the unused variable compile error.</li>
+      </ul>
+      <h3>Answer: prints [1 2 3]</h3>
+      <p>
+        Each pass, <code>n</code> is a copy of the element. Doubling
+        <code>n</code> changes only the copy, and the copy is discarded
+        at the end of the pass. The slice never changes.
+      </p>
+      <p>To double every element, use the index:</p>
+      <pre><code>// Option 1: classic for loop
+for i := 0; i &lt; len(nums); i++ {
+    nums[i] = nums[i] * 2
+}
+
+// Option 2: for-range, keep only the position
+for i := range nums {
+    nums[i] = nums[i] * 2
+}
+// nums is now [2 4 6]</code></pre>
+      <h3>Python comparison</h3>
+      <p>
+        Go's <code>range</code> works like Python's
+        <code>enumerate</code>. <code>for i, n := range nums</code> is
+        <code>for i, n in enumerate(nums)</code>. The
+        <code>_</code> means the same thing in both languages: "I do not
+        want this value." <code>for _, n := range nums</code> is like
+        Python's <code>for n in nums</code>, and it has the same
+        "changing <code>n</code> does not change the list" behavior.
+      </p>
+      <pre><code># Python version of the same bug
+nums = [1, 2, 3]
+for n in nums:
+    n = n * 2
+print(nums)   # [1, 2, 3]
+
+# Python fix
+for i in range(len(nums)):
+    nums[i] = nums[i] * 2</code></pre>
+      <p>
+        Wording for the quiz: in Go, <code>range</code> is a keyword
+        that goes after <code>:=</code>. The length appears as
+        <code>len(nums)</code> in the classic loop.
+      </p>
+    </section>
+
+    <section class="note" id="practice-4">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 4: fix the code (unused error)</h2>
+      <pre><code>package main
+
+import (
+    "fmt"
+    "os"
+    "strings"
+)
+
+func main() {
+    contents, err := os.ReadFile("data.txt")
+    lines := strings.Split(string(contents), "\n")
+    fmt.Println(len(lines))
+}</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>An unused local variable or import is a compile error in Go, not a warning.</li>
+        <li>Errors come back as the last value of a multi-value return. Go has no exceptions.</li>
+        <li>Never use <code>_</code> for an error return value.</li>
+      </ul>
+      <h3>Answer</h3>
+      <p>
+        <code>os.ReadFile</code> returns two values, and
+        <code>err</code> is declared but never used. That is a compile
+        error (something like <code>declared and not used: err</code>).
+        The right fix is to check the error and stop:
+      </p>
+      <pre><code>contents, err := os.ReadFile("data.txt")
+if err != nil {
+    fmt.Println("File reading error", err)
+    return
+}
+lines := strings.Split(string(contents), "\n")
+fmt.Println(len(lines))</code></pre>
+      <h3>The tempting wrong fix</h3>
+      <pre><code>contents, _ := os.ReadFile("data.txt")   // compiles, but never do this</code></pre>
+      <p>
+        That compiles, but a missing file is silently ignored and the
+        program keeps going with empty contents. Your notes say it
+        directly: never use <code>_</code> for error return values.
+      </p>
+      <h3>Why the return matters</h3>
+      <p>
+        Without <code>return</code>, the code continues after a failed
+        read. <code>strings.Split</code> on an empty string gives a
+        slice with one empty string in it, so the program would print
+        <code>1</code>. That looks like a real answer but is wrong. The
+        <code>return</code> stops the function at the moment something
+        goes wrong, so nothing after it runs on bad data.
+      </p>
+      <h3>Python comparison</h3>
+      <p>
+        In Python a failed read raises an exception, and the program
+        stops on its own. In Go the failure is just a return value you
+        have to look at, and the unused-variable rule forces you to.
+      </p>
+    </section>
+
+    <section class="note" id="practice-5">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 5: what prints, in what order? (defer)</h2>
+      <pre><code>func main() {
+    for i := 1; i &lt;= 3; i++ {
+        defer fmt.Println("deferred", i)
+    }
+    fmt.Println("done")
+}</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li><code>defer</code> schedules a call to run right before the current function returns.</li>
+        <li>Multiple deferred calls run like a stack, last in and first out.</li>
+      </ul>
+      <h3>Answer</h3>
+      <pre><code>done
+deferred 3
+deferred 2
+deferred 1</code></pre>
+      <p>
+        Each pass of the loop only schedules a call. It does not print
+        anything yet. When the loop ends, <code>"done"</code> prints
+        (a normal, immediate call), the function returns, and then the
+        scheduled calls run in reverse order.
+      </p>
+      <pre><code>pass   i   what defer does
+1      1   schedules "deferred 1"
+2      2   schedules "deferred 2"
+3      3   schedules "deferred 3"
+(i becomes 4, 4 &lt;= 3 is false, loop ends, the body never runs with 4)</code></pre>
+      <p>
+        There is no 4 in the output: <code>i</code> becomes 4 only so
+        the loop condition can fail. The value of <code>i</code> is also
+        locked in at the moment the <code>defer</code> line runs, which
+        is why each line shows its own number.
+      </p>
+      <p><strong>Pattern to remember:</strong> immediate lines print first, deferred lines print after the function ends, in reverse order.</p>
+    </section>
+
+    <section class="note" id="practice-6">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 6: explain how you would solve it (word counts)</h2>
+      <p>
+        Prompt: describe how you would write a Go program that reads a
+        text file and reports how many times each word appears, naming
+        the Go features you would use.
+      </p>
+      <h3>Notes that help</h3>
+      <ul>
+        <li><code>os.ReadFile</code> returns bytes and an error. Convert to a string and split it.</li>
+        <li>A missing map key returns the zero value, and the comma-ok form tells you if the key was there.</li>
+        <li>Iterating a map with <code>for-range</code> returns entries in a different order each run.</li>
+      </ul>
+      <h3>Answer in words</h3>
+      <ol>
+        <li>Read the file with <code>os.ReadFile</code>, which returns the bytes and an error, and check the error.</li>
+        <li>Convert the bytes to a string and split it into lines with <code>strings.Split</code>.</li>
+        <li>Loop over the lines with <code>for-range</code> and break each line into words.</li>
+        <li>Keep a <code>map[string]int</code>. Each word is a key and the count is the value. Add one for each word seen.</li>
+        <li>Loop over the map with <code>for-range</code> to print the results. The order changes every run on purpose.</li>
+      </ol>
+      <h3>Answer in code (built on the sillyRec example)</h3>
+      <pre><code>package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	allLines := getFile()
+	counts := make(map[string]int)
+	for _, line := range allLines {
+		for _, word := range strings.Fields(line) {
+			counts[strings.ToLower(word)]++
+		}
+	}
+	for word, count := range counts {
+		fmt.Println(word, count)
+	}
+}
+
+func getFile() []string {
+	contents, err := os.ReadFile("sillyRec")
+	if err != nil {
+		fmt.Println("File reading error", err)
+		return nil
+	}
+	return strings.Split(string(contents), "\n")
+}</code></pre>
+      <ul>
+        <li><code>counts[word]++</code> works the first time a word appears, because a missing key returns the zero value (<code>0</code>), so it becomes <code>1</code>.</li>
+        <li><code>strings.Fields</code> splits on any whitespace, including the <code>\r</code> in Windows line endings. Splitting on a single space would leave a <code>\r</code> stuck to the last word of each line.</li>
+        <li>Words with punctuation, like <code>time.</code> and <code>time</code>, count separately. The regex utility earlier on this page cleans that up.</li>
+      </ul>
+    </section>
+
+    <section class="note" id="practice-recap">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice recap: the six lessons in one place</h2>
+      <ol>
+        <li><strong>Loop trace:</strong> <code>sum += sum</code> doubles the value, and the condition is checked before each pass. The loop runs once more at 64 and ends at 128.</li>
+        <li><strong>Mixed types:</strong> Go never mixes types. Convert explicitly with <code>float64(y)</code>.</li>
+        <li><strong>for-range copies:</strong> changing <code>n</code> does not change the slice. Use the index (<code>nums[i] = ...</code>) to change the original.</li>
+        <li><strong>Unused err:</strong> an unused variable is a compile error. Check the error and <code>return</code>. Never hide it with <code>_</code>.</li>
+        <li><strong>defer:</strong> deferred calls run after the function ends, in reverse order. Immediate lines print first.</li>
+        <li><strong>Word count:</strong> read the file, split it, count with a map, then loop over the map.</li>
+      </ol>
+      <p>
+        The pattern behind most of the misses: Go hides a copy or a
+        delay where you would expect the change to happen right away.
+        Ask "did this change the original?" and "when does this line
+        actually run?" on every trace question.
       </p>
     </section>
 
