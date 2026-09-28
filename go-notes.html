@@ -1095,7 +1095,7 @@ Chester Church</code></pre>
       <span class="src src-practice">practice question</span>
       <h2>Practice questions: how to use these</h2>
       <p>
-        Six practice questions with answers, written to match the
+        Thirteen practice questions with answers, written to match the
         kinds of questions on the quiz: trace what code prints, fix code
         so it compiles, and explain how you would solve something. Each
         one lists the notes that help and then the full answer.
@@ -1392,10 +1392,333 @@ func getFile() []string {
       </ul>
     </section>
 
+
+    <section class="note" id="practice-7">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 7: what does this print? (closures)</h2>
+      <pre><code>func counter() func() int {
+    count := 0
+    return func() int {
+        count++
+        return count
+    }
+}
+
+func main() {
+    a := counter()
+    b := counter()
+    fmt.Println(a())
+    fmt.Println(a())
+    fmt.Println(b())
+    fmt.Println(a())
+}</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>Functions are first-class values in Go, so a function can be returned from another function.</li>
+        <li>A closure is a function declared inside another function that can use the outer function's variables.</li>
+        <li>Each call to <code>counter()</code> runs fresh, so it creates its own <code>count</code> variable.</li>
+      </ul>
+      <h3>Answer</h3>
+      <pre><code>1
+2
+1
+3</code></pre>
+      <p>
+        <code>a</code> and <code>b</code> each get their own <code>count</code>
+        from a separate call to <code>counter()</code>. Calling
+        <code>b()</code> never touches <code>a</code>'s count, so the
+        next call to <code>a()</code> just continues from where it left
+        off: 1, 2, then 3. A closure remembers its own copy of the
+        outer function's variables between calls, and each call to the
+        outer function makes a new set.
+      </p>
+    </section>
+
+    <section class="note" id="practice-8">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 8: fix the code (function signature and returns)</h2>
+      <pre><code>func divide(a, b float65) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>The opening brace of a function has to be on the same line as the signature.</li>
+        <li>A function with multiple return values must return all of them, every time.</li>
+        <li>The return type goes after the parameter list: <code>(float64, error)</code>.</li>
+        <li>By convention the error is the last return value, and <code>nil</code> means "no error."</li>
+      </ul>
+      <h3>Answer</h3>
+      <pre><code>func divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}</code></pre>
+      <p>Two problems to catch here:</p>
+      <ul>
+        <li><strong>Missing return type.</strong> Without <code>(float64, error)</code> after the parameters, Go thinks the function returns nothing, so returning two values fails to compile.</li>
+        <li><strong>Typo:</strong> <code>float65</code> should be <code>float64</code>.</li>
+      </ul>
+      <p>
+        A separate version of this question also had the brace on its
+        own line and single-value <code>return 0</code> /
+        <code>return a / b</code> statements. Same fixes apply: brace
+        stays on the signature line, and every <code>return</code>
+        supplies both values the signature promises.
+      </p>
+    </section>
+
+    <section class="note" id="practice-9">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 9: what does this print? (switch, including blank switch)</h2>
+      <pre><code>x := 2
+switch x {
+case 1:
+    fmt.Println("one")
+case 2:
+    fmt.Println("two")
+case 3:
+    fmt.Println("three")
+}
+fmt.Println("end")
+
+answer := "maybe yes"
+switch {
+case strings.Contains(answer, "yes"):
+    fmt.Println("matched yes")
+case strings.Contains(answer, "maybe"):
+    fmt.Println("matched maybe")
+}</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>Go's <code>switch</code> has no default fall-through, so there is no need for <code>break</code> like in C, C++, or Java.</li>
+        <li>A blank switch has no value after <code>switch</code>. Each <code>case</code> is its own condition, and the first one that is true runs.</li>
+        <li><code>strings.Contains(s, sub)</code> returns true if <code>sub</code> appears anywhere in <code>s</code>.</li>
+      </ul>
+      <h3>Answer</h3>
+      <pre><code>two
+end
+matched yes</code></pre>
+      <p>
+        Only the matching case runs, then execution continues after the
+        switch. <code>"maybe yes"</code> contains both <code>"yes"</code>
+        and <code>"maybe"</code>, but only the first true case fires, so
+        <code>"matched yes"</code> wins because it's listed first. If
+        the two cases were swapped, the output would be
+        <code>"matched maybe"</code> instead. Order matters when cases
+        can overlap.
+      </p>
+      <p>
+        <strong>Java comparison:</strong> the same switch written in
+        Java without <code>break</code> statements would print
+        <code>two</code>, <code>three</code>, <code>end</code>, since
+        Java falls through to every case below the match until it hits
+        a <code>break</code>. Go stops automatically after the matching
+        case.
+      </p>
+    </section>
+
+    <section class="note" id="practice-10">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 10: what does this print? (map comma-ok)</h2>
+      <pre><code>wages := map[string]float32{
+    "Ed":  450.17,
+    "Ann": 375.99,
+}
+a, ok1 := wages["Ann"]
+b, ok2 := wages["John"]
+fmt.Println(a, ok1)
+fmt.Println(b, ok2)</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>Looking up a key that is not in the map does not error. It returns the zero value for the value's type.</li>
+        <li>The comma-ok form <code>value, ok := m[key]</code> sets <code>ok</code> to true if the key was found and false if not.</li>
+      </ul>
+      <h3>Answer</h3>
+      <pre><code>375.99 true
+0 false</code></pre>
+      <p>
+        <code>ok</code> is just a name, a yes-or-no answer to "was this
+        key actually in the map." Python splits this into two separate
+        operations, <code>dict.get(key)</code> (gives <code>None</code>
+        if missing) and <code>key in dict</code> (gives
+        <code>False</code> if missing). Go does both in one line.
+      </p>
+      <p>
+        <strong>Why you can't just check <code>b == 0</code>:</strong>
+        Python's <code>None</code> is clearly different from any real
+        number, but Go has no <code>None</code> for a
+        <code>float32</code>. A missing key gives the zero value,
+        <code>0</code>, and so does a key that legitimately stores
+        <code>0</code>. Those two cases look identical unless you check
+        <code>ok</code>. For example, a map entry of
+        <code>"Sam": 0</code> would give <code>s, ok := wages["Sam"]</code>
+        as <code>0 true</code>, the same value as a missing key but with
+        a different <code>ok</code>.
+      </p>
+    </section>
+
+    <section class="note" id="practice-11">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 11: what does this print? (structs, zero values, exporting)</h2>
+      <pre><code>type Player struct {
+    Name   string
+    Health int
+    Jump   int
+}
+
+func main() {
+    p1 := Player{"Mario", 1, 2}
+    p2 := Player{Name: "Luigi", Health: 1}
+    var p3 Player
+
+    fmt.Println(p1.Jump)
+    fmt.Println(p2.Jump)
+    fmt.Println(p3.Name == "")
+    fmt.Println(p3.Health)
+}</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>A struct literal can be positional (<code>Player{"Mario", 1, 2}</code>) or by field name (<code>Player{Name: "Luigi", Health: 1}</code>).</li>
+        <li>Any field left out of a struct literal gets its type's zero value.</li>
+        <li><code>var p Player</code> with no value gives every field its zero value.</li>
+        <li>Capitalization is functional in Go: a capitalized name is exported (visible outside its package), lowercase is package-private.</li>
+      </ul>
+      <h3>Answer</h3>
+      <pre><code>2
+0
+true
+0</code></pre>
+      <p>
+        <code>p1.Jump</code> is <code>2</code> from the positional
+        literal. <code>p2.Jump</code> is <code>0</code> because
+        <code>Jump</code> was never supplied. <code>p3</code> has every
+        field at its zero value, so <code>p3.Name</code> is
+        <code>""</code>, meaning the comparison
+        <code>p3.Name == ""</code> prints <code>true</code>, not the
+        empty string itself. That's a trace habit worth watching for:
+        check whether a line prints a value or a comparison of that
+        value.
+      </p>
+      <p>
+        <strong>Exporting:</strong> if <code>Player</code> lived in a
+        different package, <code>p1.Jump</code> (capitalized) would
+        still be reachable from outside that package, but a lowercase
+        field like <code>jump</code> would not compile from outside.
+        Go uses the first letter's case where Java uses
+        <code>public</code>/<code>private</code> keywords.
+      </p>
+    </section>
+
+    <section class="note" id="practice-12">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 12: what does this print? (slices, append, slicing)</h2>
+      <pre><code>names := make([]string, 2, 5)
+names[0] = "Ed"
+names[1] = "Ann"
+names = append(names, "Sam")
+fmt.Println(len(names), cap(names))
+
+more := []string{"Li", "Kim"}
+names = append(names, more...)
+fmt.Println(names)
+fmt.Println(names[:2])</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>A slice tracks a pointer, a length (elements it has), and a capacity (room in the underlying array).</li>
+        <li><code>make([]string, 2, 5)</code> makes a slice with length 2 and capacity 5.</li>
+        <li><code>append</code> returns the result, so you assign it back: <code>names = append(names, ...)</code>.</li>
+        <li>Slicing works like Python: <code>names[:2]</code> is the elements from the start up to, but not including, index 2.</li>
+      </ul>
+      <h3>Answer</h3>
+      <pre><code>3 5
+[Ed Ann Sam Li Kim]
+[Ed Ann]</code></pre>
+      <p>
+        <code>fmt.Println</code> on a slice prints it space-separated
+        inside square brackets, not comma-separated like Python. After
+        adding "Sam", length is 3 and capacity stays 5 since the
+        underlying array still has room. <code>more...</code> spreads
+        the second slice into <code>append</code> so both "Li" and
+        "Kim" get added individually.
+      </p>
+      <p>
+        <strong>The slicing trap:</strong> <code>names[:2]</code> means
+        "from the start, up to but not including index 2," which is
+        the first two elements, <code>[Ed Ann]</code>, not the last
+        three. If you wanted the last three, that would be
+        <code>names[2:]</code> instead.
+      </p>
+      <pre><code>index   0     1      2      3     4
+value   Ed    Ann    Sam    Li    Kim</code></pre>
+    </section>
+
+    <section class="note" id="practice-13">
+      <span class="tag">practice</span>
+      <span class="src src-practice">practice question</span>
+      <h2>Practice 13: fix the code (pass by value vs. pointer)</h2>
+      <pre><code>type Player struct {
+    Name   string
+    Health int
+}
+
+func heal(p Player) {
+    p.Health = 100
+}
+
+func main() {
+    p1 := Player{"Mario", 10}
+    heal(p1)
+    fmt.Println(p1.Health)
+}</code></pre>
+      <h3>Notes that help</h3>
+      <ul>
+        <li>Go passes values by value. A function parameter is a copy of whatever was passed in, structs included.</li>
+        <li>To let a function modify the caller's original variable, use a pointer: <code>func heal(p *Player)</code>.</li>
+        <li>With a pointer, <code>p.Health = 100</code> still works. Go automatically dereferences the pointer for field access, no need for <code>(*p).Health</code>.</li>
+        <li>Calling a pointer-parameter function looks like <code>heal(&amp;p1)</code>, using <code>&amp;</code> to get the address of <code>p1</code>.</li>
+      </ul>
+      <h3>Answer</h3>
+      <p>
+        This prints <code>10</code>, not <code>100</code>. <code>heal</code>
+        receives a copy of <code>p1</code>, so setting
+        <code>p.Health = 100</code> only changes the copy. The original
+        <code>p1</code> is untouched, the same "copy, not the original"
+        idea as the <code>for-range</code> question earlier on this
+        page.
+      </p>
+      <p>To actually heal <code>p1</code>, use a pointer:</p>
+      <pre><code>func heal(p *Player) {
+    p.Health = 100
+}
+
+func main() {
+    p1 := Player{"Mario", 10}
+    heal(&p1)
+    fmt.Println(p1.Health) // 100
+}</code></pre>
+      <p>
+        <code>&amp;p1</code> passes the address of <code>p1</code>
+        instead of a copy of its value, so <code>heal</code> is now
+        working on the real struct. Field access syntax stays the same,
+        <code>p.Health</code>, even though <code>p</code> is now a
+        pointer.
+      </p>
+    </section>
+
     <section class="note" id="practice-recap">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
-      <h2>Practice recap: the six lessons in one place</h2>
+      <h2>Practice recap: all thirteen lessons in one place</h2>
       <ol>
         <li><strong>Loop trace:</strong> <code>sum += sum</code> doubles the value, and the condition is checked before each pass. The loop runs once more at 64 and ends at 128.</li>
         <li><strong>Mixed types:</strong> Go never mixes types. Convert explicitly with <code>float64(y)</code>.</li>
@@ -1403,12 +1726,19 @@ func getFile() []string {
         <li><strong>Unused err:</strong> an unused variable is a compile error. Check the error and <code>return</code>. Never hide it with <code>_</code>.</li>
         <li><strong>defer:</strong> deferred calls run after the function ends, in reverse order. Immediate lines print first.</li>
         <li><strong>Word count:</strong> read the file, split it, count with a map, then loop over the map.</li>
+        <li><strong>Closures:</strong> each call to the outer function makes a fresh copy of its variables. Two closures from two separate calls never share state.</li>
+        <li><strong>Function signatures:</strong> the return type goes after the parameter list, the brace stays on the signature line, and every <code>return</code> supplies every value the signature promises.</li>
+        <li><strong>switch:</strong> no fall-through, so only the matching case runs. In a blank switch, the first true case wins even if others would also match.</li>
+        <li><strong>Map comma-ok:</strong> a missing key returns the zero value, same as a key that legitimately stores the zero value. Only <code>ok</code> tells them apart.</li>
+        <li><strong>Structs and zero values:</strong> an omitted field gets the zero value. Printing a comparison (<code>p.Name == ""</code>) prints <code>true</code>/<code>false</code>, not the value itself.</li>
+        <li><strong>Slicing:</strong> <code>names[:2]</code> means "up to, not including, index 2." That's the first two elements, not the last ones.</li>
+        <li><strong>Pass by value:</strong> a struct parameter is a copy. To let a function modify the caller's original, use a pointer (<code>*Player</code>, called with <code>&amp;p1</code>).</li>
       </ol>
       <p>
         The pattern behind most of the misses: Go hides a copy or a
         delay where you would expect the change to happen right away.
-        Ask "did this change the original?" and "when does this line
-        actually run?" on every trace question.
+        Ask "did this change the original, or only a copy?" and "when
+        does this line actually run?" on every trace question.
       </p>
     </section>
 
