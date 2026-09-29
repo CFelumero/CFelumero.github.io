@@ -12,10 +12,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-<!-- Site-wide external stylesheet (already contains its own @media rules) -->
+<!-- Site-wide external stylesheet -->
 <link rel="stylesheet" href="style.css">
 
-<!-- Embedded CSS specific to this page, not inline styles -->
+<!-- Embedded CSS specific to this page-->
 <style>
   .proj-card {
     background: var(--surface);
@@ -42,8 +42,7 @@
     padding: 1.4rem 1.6rem;
   }
 
-  /* Page-specific responsive rule: stack the group-project box's
-     internal layout and tighten spacing on small screens */
+  /* auto resize for smaller screens */
   @media only screen and (max-width: 576px) {
     .proj-card { padding: 1rem; }
     .group-project-box { padding: 1.1rem 1.2rem; }
@@ -73,11 +72,11 @@
     <h1>Project</h1>
     <p>
       A list of the computer science projects I've worked on so far, plus
-      a description of my idea for the COMP335 final project.
+      a description of my idea for an upcoming COMP335 final project.
     </p>
   </section>
 
-  <!-- Bootstrap grid: row/col classes, responsive at sm/md breakpoints -->
+  <!-- Bootstrap grid: row/col classes, responsive -->
   <section class="mb-5">
     <h2 class="mb-3">Projects so far</h2>
     <div class="row g-3">
@@ -155,9 +154,7 @@
         public profile information and list of repositories.
       </p>
       <p>
-        I picked this because it's simple to scope, doesn't need any
-        account or API key to work, and there's no risk of it breaking
-        during a demo.
+        I picked this because it's simple and should be relatively easy to build throughout the semester
       </p>
     </div>
   </section>
