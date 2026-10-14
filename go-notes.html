@@ -134,13 +134,113 @@
     nav.toc { display: none; }
     main { padding: 20px; }
   }
+  .src-project  { color: #1f7f86; border-color: #1f7f86; }
+  .src-quiz     { color: #c2413a; border-color: #c2413a; }
+  .note h3 .src { vertical-align: 2px; }
+
+  .chapter { margin-bottom: 2.2rem; }
+  .chapter-head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: 2px 14px;
+    padding: 6px 2px 12px;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--ink);
+    scroll-margin-top: 16px;
+  }
+  .chapter-num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .chapter-title { margin: 0; font-size: 1.45rem; font-weight: 800; }
+  .chapter-head p {
+    grid-column: 2;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  nav.toc .toc-tools {
+    display: flex;
+    gap: 6px;
+    margin: 0 0 10px 8px;
+  }
+  nav.toc .toc-tools button {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 9px;
+    cursor: pointer;
+  }
+  nav.toc .toc-tools button:hover { color: var(--accent); border-color: var(--accent); }
+  nav.toc details { margin-bottom: 4px; }
+  nav.toc summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--ink);
+  }
+  nav.toc summary::-webkit-details-marker { display: none; }
+  nav.toc summary::before {
+    content: "\25B8";
+    font-size: 0.7rem;
+    color: var(--muted);
+    transition: transform 0.15s;
+  }
+  nav.toc details[open] > summary::before { transform: rotate(90deg); }
+  nav.toc summary:hover { background: var(--accent-soft); }
+  nav.toc summary .num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    min-width: 1.2em;
+  }
+  nav.toc summary .count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--muted);
+  }
+  nav.toc details a { padding-left: 30px; }
+  nav.toc details.current > summary { color: var(--accent); }
+  nav.toc a.active {
+    color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 600;
+  }
+
+  @media (max-width: 800px) {
+    nav.toc {
+      display: block;
+      position: static;
+      max-height: none;
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+      padding: 12px 16px;
+    }
+    main { padding: 20px 16px 60px; }
+    .note { padding: 1.1rem 1rem; }
+  }
 </style>
 </head>
 <body>
 
 <header class="top">
   <h1>Go Language Notes</h1>
-  <p>Reference notes from COMP335: syntax, types, control flow, and functions</p>
+  <p>Reference notes from COMP335: syntax, types, control flow, functions, pointers, methods, and interfaces</p>
   <div class="src-key">
     Source key:
     <span class="src src-notes">personal notes</span>
@@ -148,6 +248,8 @@
     <span class="src src-inclass">in-class assignment</span>
     <span class="src src-external">external</span>
     <span class="src src-practice">practice question</span>
+    <span class="src src-project">project</span>
+    <span class="src src-quiz">quiz</span>
   </div>
 </header>
 
@@ -157,6 +259,8 @@
 
   <main id="notes">
 
+    <div class="chapter" id="ch-basics" data-title="Getting started" data-num="1">
+      <header class="chapter-head"><span class="chapter-num">Chapter 1</span><h2 class="chapter-title">Getting started</h2><p>What Go is, formatting, variables, constants</p></header>
     <section class="note" id="overview">
       <span class="tag">basics</span>
       <span class="src src-notes">personal notes</span>
@@ -182,7 +286,6 @@
         errors in Go.
       </p>
     </section>
-
     <section class="note" id="gofmt">
       <span class="tag">basics</span>
       <span class="src src-slides">slideshow</span>
@@ -204,7 +307,6 @@
       </p>
       <pre><code>gofmt -w main.go   // rewrite main.go in place to standard style</code></pre>
     </section>
-
     <section class="note" id="comments">
       <span class="tag">basics</span>
       <span class="src src-notes">personal notes</span>
@@ -218,7 +320,84 @@
    comment block
 */</code></pre>
     </section>
+    <section class="note" id="statements">
+      <span class="tag">basics</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>How a statement ends</h2>
+      <p>
+        A quick language comparison worth having straight for a quiz:
+      </p>
+      <ul>
+        <li>Java (and C/C++/C#): every statement ends with a semicolon <code>;</code>.</li>
+        <li>Python: a statement ends at the end of the line, no punctuation needed.</li>
+        <li>
+          Go: also ends at the end of the line, and semicolons are
+          "optional" in the sense that you almost never type one
+          yourself. Behind the scenes, the compiler scans each line and
+          automatically inserts a semicolon after it where one is
+          needed, so the result behaves like Java under the hood while
+          reading like Python on the page. <code>gofmt</code> will strip
+          out any semicolons you do type by hand.
+        </li>
+      </ul>
+    </section>
+    <section class="note" id="variables">
+      <span class="tag">basics</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Variables</h2>
+      <p>There are two main ways to create a variable in Go:</p>
+      <pre><code>// short form, := infers the type, only works inside a function
+x, y := 12, 20
 
+// var form, works at package level or inside a function
+var x, y int = 12, 20</code></pre>
+      <p>
+        With <code>:=</code>, at least one name on the left has to be
+        new, and the others can be existing variables getting a new
+        value. With <code>var</code>, every name must be new, and all of
+        them must be the same type.
+      </p>
+      <p>
+        If you declare a variable without a value, it gets that type's
+        <strong>zero value</strong> automatically: <code>0</code>
+        for numbers, <code>""</code> for strings, <code>false</code> for
+        booleans, <code>nil</code> for pointers/slices/maps.
+      </p>
+      <pre><code>var count int    // count is 0
+var name string  // name is ""</code></pre>
+      <p>
+        Go also treats an unused local variable as a compile error, not a
+        warning, and the same goes for an unused import. That rule is
+        specifically about local variables, though: an unused
+        package-level variable (one declared outside any function) is
+        allowed.
+      </p>
+    </section>
+    <section class="note" id="constants">
+      <span class="tag">basics</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Constants</h2>
+      <p>
+        Use <code>const</code> for an immutable, compile-time value. Go's
+        naming convention for constants is the same as for regular
+        variables (not ALL_CAPS like Java/C++), because in Go,
+        capitalization actually controls export visibility rather than
+        signaling "this is a constant."
+      </p>
+      <pre><code>const x int32 = 50
+
+const (
+    Left  = true
+    Right = false
+)</code></pre>
+    </section>
+    </div>
+
+    <div class="chapter" id="ch-types" data-title="Types and structs" data-num="2">
+      <header class="chapter-head"><span class="chapter-num">Chapter 2</span><h2 class="chapter-title">Types and structs</h2><p>Basic types, literals, conversion, structs</p></header>
     <section class="note" id="types">
       <span class="tag">types</span>
       <span class="src src-notes">personal notes</span>
@@ -245,7 +424,6 @@ float32 float64</code></pre>
         and <code>bool</code>.
       </p>
     </section>
-
     <section class="note" id="literals">
       <span class="tag">types</span>
       <span class="src src-notes">personal notes</span>
@@ -284,7 +462,6 @@ b := `this \t has a tab \n and a newline`
 fmt.Println(r)        // 65 (the numeric code point)
 fmt.Println(string(r)) // "A"</code></pre>
     </section>
-
     <section class="note" id="type-conversion">
       <span class="tag">types</span>
       <span class="src src-notes">personal notes</span>
@@ -312,173 +489,6 @@ y := x * 10 // fine, 10 gets treated as a float64 literal here
 var z int = 10.4     // compile error, this loses precision
 var a int = "a string" // compile error, wrong type entirely</code></pre>
     </section>
-
-    <section class="note" id="variables">
-      <span class="tag">basics</span>
-      <span class="src src-notes">personal notes</span>
-      <span class="src src-slides">slideshow</span>
-      <h2>Variables</h2>
-      <p>There are two main ways to create a variable in Go:</p>
-      <pre><code>// short form, := infers the type, only works inside a function
-x, y := 12, 20
-
-// var form, works at package level or inside a function
-var x, y int = 12, 20</code></pre>
-      <p>
-        With <code>:=</code>, at least one name on the left has to be
-        new, and the others can be existing variables getting a new
-        value. With <code>var</code>, every name must be new, and all of
-        them must be the same type.
-      </p>
-      <p>
-        If you declare a variable without a value, it gets that type's
-        <strong>zero value</strong> automatically: <code>0</code>
-        for numbers, <code>""</code> for strings, <code>false</code> for
-        booleans, <code>nil</code> for pointers/slices/maps.
-      </p>
-      <pre><code>var count int    // count is 0
-var name string  // name is ""</code></pre>
-      <p>
-        Go also treats an unused local variable as a compile error, not a
-        warning, and the same goes for an unused import. That rule is
-        specifically about local variables, though: an unused
-        package-level variable (one declared outside any function) is
-        allowed.
-      </p>
-    </section>
-
-    <section class="note" id="constants">
-      <span class="tag">basics</span>
-      <span class="src src-notes">personal notes</span>
-      <span class="src src-slides">slideshow</span>
-      <h2>Constants</h2>
-      <p>
-        Use <code>const</code> for an immutable, compile-time value. Go's
-        naming convention for constants is the same as for regular
-        variables (not ALL_CAPS like Java/C++), because in Go,
-        capitalization actually controls export visibility rather than
-        signaling "this is a constant."
-      </p>
-      <pre><code>const x int32 = 50
-
-const (
-    Left  = true
-    Right = false
-)</code></pre>
-    </section>
-
-    <section class="note" id="arrays">
-      <span class="tag">collections</span>
-      <span class="src src-notes">personal notes</span>
-      <span class="src src-slides">slideshow</span>
-      <h2>Arrays</h2>
-      <p>
-        An array in Go is a fixed-size, sequential block of memory holding
-        elements of the same type. The size is actually part of the type
-        in fact, <code>[4]int</code> and <code>[10]int</code> are two
-        different types, not the same type with a different length. That
-        makes arrays fast, but restrictive: a function that takes a
-        <code>[4]int</code> can't also accept a <code>[10]int</code>.
-      </p>
-      <pre><code>var directions = [4]int{1, 2, 3, 4}
-directions[1] = 10 // still only ever 4 slots
-
-var zeroed [4]int // all four elements start at the zero value</code></pre>
-      <p>
-        Because of that restriction, almost nobody uses raw arrays
-        directly in Go. Slices (below) are what people actually
-        reach for.
-      </p>
-    </section>
-
-    <section class="note" id="slices">
-      <span class="tag">collections</span>
-      <span class="src src-notes">personal notes</span>
-      <span class="src src-slides">slideshow</span>
-      <h2>Slices</h2>
-      <p>
-        A slice is a resizable view into an underlying array, the
-        closest thing Go has to Python's list or Java's ArrayList. Every
-        slice tracks three things: a pointer to an element in an array,
-        a <strong>length</strong> (how many elements are in the slice),
-        and a <strong>capacity</strong> (how far the underlying array
-        goes before it needs to be reallocated).
-      </p>
-      <pre><code>var empty []int      // zero value of a slice is nil, len(empty) == 0
-
-names := make([]string, 5, 10)
-// type string, length 5, capacity 10
-// if you omit the capacity, it defaults to match the length</code></pre>
-      <h3>Adding to a slice</h3>
-      <p>Use <code>append</code>, which returns a (possibly new) slice:</p>
-      <pre><code>names = append(names, "Santore")               // one value
-names = append(names, "Jung", "Black", "Sattar") // several values
-
-names2 := []string{"Li", "Kim"}
-names = append(names, names2...) // spread another slice into append</code></pre>
-      <h3>Slicing syntax</h3>
-      <p>
-        Go also supports Python-style slicing with <code>start:end</code>
-        inside the brackets. This creates a new slice header that still
-        points at the same underlying data, so changing one can
-        affect the other.
-      </p>
-      <pre><code>names := []string{"Santore", "Jung", "Black", "Sattar", "Li"}
-firstThree := names[:3] // Santore, Jung, Black
-lastTwo := names[3:]    // Sattar, Li</code></pre>
-      <h3>Slices as parameters</h3>
-      <p>
-        Slices are passed by value like everything else in Go, but since
-        the "value" is really just the pointer/length/capacity triple,
-        you can still mutate the underlying array's contents through a
-        slice parameter. You just can't reassign what the
-        caller's slice variable points to.
-      </p>
-    </section>
-
-    <section class="note" id="console">
-      <span class="tag">io</span>
-      <span class="src src-notes">personal notes</span>
-      <span class="src src-slides">slideshow</span>
-      <h2>Console input and output</h2>
-      <p>
-        Writing to the console uses <code>fmt.Println</code> or
-        <code>fmt.Print</code>, with values separated by commas:
-      </p>
-      <pre><code>fmt.Println("Score:", score, "Lives:", lives)</code></pre>
-      <p>Reading input takes two steps: wrap stdin in a buffered reader, then call one of its read methods.</p>
-      <pre><code>reader := bufio.NewReader(os.Stdin)
-line, err := reader.ReadString('\n')
-// reads until the user presses Enter</code></pre>
-    </section>
-
-    <section class="note" id="maps">
-      <span class="tag">collections</span>
-      <span class="src src-notes">personal notes</span>
-      <span class="src src-slides">slideshow</span>
-      <h2>Maps</h2>
-      <p>
-        Go's maps are hash tables, working much like a Python dictionary.
-        Keys have to be a comparable type (anything you could use
-        <code>==</code> on); values can be any type.
-      </p>
-      <pre><code>wages := make(map[string]float32)
-
-// or build one with a literal
-wages := map[string]float32{
-    "Ed":  450.17,
-    "Ann": 375.99,
-}</code></pre>
-      <p>
-        Looking up a key that isn't in the map doesn't error. It
-        just returns the zero value for the value type. If you need to
-        tell "the value really is zero" apart from "the key wasn't
-        there," use the comma-ok form:
-      </p>
-      <pre><code>earnings, ok := wages["John"]
-// earnings == 0.0, ok == false, since "John" isn't a key</code></pre>
-    </section>
-
     <section class="note" id="structs">
       <span class="tag">types</span>
       <span class="src src-notes">personal notes</span>
@@ -534,30 +544,107 @@ fmt.Println(save.P.Name) // reach through the nested struct</code></pre>
 save := SaveGame{Player: p1, Size: 128}
 fmt.Println(save.Name) // Player's fields are promoted - no save.Player.Name needed</code></pre>
     </section>
+    </div>
 
-    <section class="note" id="statements">
-      <span class="tag">basics</span>
+    <div class="chapter" id="ch-collections" data-title="Collections" data-num="3">
+      <header class="chapter-head"><span class="chapter-num">Chapter 3</span><h2 class="chapter-title">Collections</h2><p>Arrays, slices, maps</p></header>
+    <section class="note" id="arrays">
+      <span class="tag">collections</span>
       <span class="src src-notes">personal notes</span>
       <span class="src src-slides">slideshow</span>
-      <h2>How a statement ends</h2>
+      <h2>Arrays</h2>
       <p>
-        A quick language comparison worth having straight for a quiz:
+        An array in Go is a fixed-size, sequential block of memory holding
+        elements of the same type. The size is actually part of the type
+        in fact, <code>[4]int</code> and <code>[10]int</code> are two
+        different types, not the same type with a different length. That
+        makes arrays fast, but restrictive: a function that takes a
+        <code>[4]int</code> can't also accept a <code>[10]int</code>.
       </p>
-      <ul>
-        <li>Java (and C/C++/C#): every statement ends with a semicolon <code>;</code>.</li>
-        <li>Python: a statement ends at the end of the line, no punctuation needed.</li>
-        <li>
-          Go: also ends at the end of the line, and semicolons are
-          "optional" in the sense that you almost never type one
-          yourself. Behind the scenes, the compiler scans each line and
-          automatically inserts a semicolon after it where one is
-          needed, so the result behaves like Java under the hood while
-          reading like Python on the page. <code>gofmt</code> will strip
-          out any semicolons you do type by hand.
-        </li>
-      </ul>
-    </section>
+      <pre><code>var directions = [4]int{1, 2, 3, 4}
+directions[1] = 10 // still only ever 4 slots
 
+var zeroed [4]int // all four elements start at the zero value</code></pre>
+      <p>
+        Because of that restriction, almost nobody uses raw arrays
+        directly in Go. Slices (below) are what people actually
+        reach for.
+      </p>
+    </section>
+    <section class="note" id="slices">
+      <span class="tag">collections</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Slices</h2>
+      <p>
+        A slice is a resizable view into an underlying array, the
+        closest thing Go has to Python's list or Java's ArrayList. Every
+        slice tracks three things: a pointer to an element in an array,
+        a <strong>length</strong> (how many elements are in the slice),
+        and a <strong>capacity</strong> (how far the underlying array
+        goes before it needs to be reallocated).
+      </p>
+      <pre><code>var empty []int      // zero value of a slice is nil, len(empty) == 0
+
+names := make([]string, 5, 10)
+// type string, length 5, capacity 10
+// if you omit the capacity, it defaults to match the length</code></pre>
+      <h3>Adding to a slice</h3>
+      <p>Use <code>append</code>, which returns a (possibly new) slice:</p>
+      <pre><code>names = append(names, "Santore")               // one value
+names = append(names, "Jung", "Black", "Sattar") // several values
+
+names2 := []string{"Li", "Kim"}
+names = append(names, names2...) // spread another slice into append</code></pre>
+      <h3>Slicing syntax</h3>
+      <p>
+        Go also supports Python-style slicing with <code>start:end</code>
+        inside the brackets. This creates a new slice header that still
+        points at the same underlying data, so changing one can
+        affect the other.
+      </p>
+      <pre><code>names := []string{"Santore", "Jung", "Black", "Sattar", "Li"}
+firstThree := names[:3] // Santore, Jung, Black
+lastTwo := names[3:]    // Sattar, Li</code></pre>
+      <h3>Slices as parameters</h3>
+      <p>
+        Slices are passed by value like everything else in Go, but since
+        the "value" is really just the pointer/length/capacity triple,
+        you can still mutate the underlying array's contents through a
+        slice parameter. You just can't reassign what the
+        caller's slice variable points to.
+      </p>
+    </section>
+    <section class="note" id="maps">
+      <span class="tag">collections</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Maps</h2>
+      <p>
+        Go's maps are hash tables, working much like a Python dictionary.
+        Keys have to be a comparable type (anything you could use
+        <code>==</code> on); values can be any type.
+      </p>
+      <pre><code>wages := make(map[string]float32)
+
+// or build one with a literal
+wages := map[string]float32{
+    "Ed":  450.17,
+    "Ann": 375.99,
+}</code></pre>
+      <p>
+        Looking up a key that isn't in the map doesn't error. It
+        just returns the zero value for the value type. If you need to
+        tell "the value really is zero" apart from "the key wasn't
+        there," use the comma-ok form:
+      </p>
+      <pre><code>earnings, ok := wages["John"]
+// earnings == 0.0, ok == false, since "John" isn't a key</code></pre>
+    </section>
+    </div>
+
+    <div class="chapter" id="ch-control" data-title="Control flow" data-num="4">
+      <header class="chapter-head"><span class="chapter-num">Chapter 4</span><h2 class="chapter-title">Control flow</h2><p>if, for, for-range, switch</p></header>
     <section class="note" id="if">
       <span class="tag">control flow</span>
       <span class="src src-notes">personal notes</span>
@@ -580,7 +667,6 @@ fmt.Println(save.Name) // Player's fields are promoted - no save.Player.Name nee
         chain, available in every branch.
       </p>
     </section>
-
     <section class="note" id="for">
       <span class="tag">control flow</span>
       <span class="src src-notes">personal notes</span>
@@ -614,7 +700,6 @@ fmt.Println(sum)</code></pre>
         Both work the same as in C-family languages.
       </p>
     </section>
-
     <section class="note" id="for-range">
       <span class="tag">control flow</span>
       <span class="src src-notes">personal notes</span>
@@ -665,7 +750,6 @@ for i, name := range names {
         you're supposed to be checking.
       </p>
     </section>
-
     <section class="note" id="switch">
       <span class="tag">control flow</span>
       <span class="src src-notes">personal notes</span>
@@ -699,7 +783,10 @@ default:
     fmt.Println("Not sure")
 }</code></pre>
     </section>
+    </div>
 
+    <div class="chapter" id="ch-functions" data-title="Functions and errors" data-num="5">
+      <header class="chapter-head"><span class="chapter-num">Chapter 5</span><h2 class="chapter-title">Functions and errors</h2><p>Functions, closures, defer, errors</p></header>
     <section class="note" id="functions">
       <span class="tag">functions</span>
       <span class="src src-notes">personal notes</span>
@@ -774,7 +861,6 @@ defer resp.Body.Close()</code></pre>
     return // "naked" return - sends back answer and err as they stand
 }</code></pre>
     </section>
-
     <section class="note" id="first-class-functions">
       <span class="tag">functions</span>
       <span class="src src-slides">slideshow</span>
@@ -836,7 +922,6 @@ op = func(x, y int) int {
     return x + y
 } // does NOT compile: int != int64, even though the logic is identical</code></pre>
     </section>
-
     <section class="note" id="defer">
       <span class="tag">functions</span>
       <span class="src src-slides">slideshow</span>
@@ -885,7 +970,6 @@ op = func(x, y int) int {
         instead of piling up until the very end.
       </p>
     </section>
-
     <section class="note" id="errors">
       <span class="tag">functions</span>
       <span class="src src-slides">slideshow</span>
@@ -908,7 +992,25 @@ defer resp.Body.Close()</code></pre>
         anti-pattern in Go.
       </p>
     </section>
+    </div>
 
+    <div class="chapter" id="ch-io" data-title="Input and output" data-num="6">
+      <header class="chapter-head"><span class="chapter-num">Chapter 6</span><h2 class="chapter-title">Input and output</h2><p>Console, files, cleaning strings</p></header>
+    <section class="note" id="console">
+      <span class="tag">io</span>
+      <span class="src src-notes">personal notes</span>
+      <span class="src src-slides">slideshow</span>
+      <h2>Console input and output</h2>
+      <p>
+        Writing to the console uses <code>fmt.Println</code> or
+        <code>fmt.Print</code>, with values separated by commas:
+      </p>
+      <pre><code>fmt.Println("Score:", score, "Lives:", lives)</code></pre>
+      <p>Reading input takes two steps: wrap stdin in a buffered reader, then call one of its read methods.</p>
+      <pre><code>reader := bufio.NewReader(os.Stdin)
+line, err := reader.ReadString('\n')
+// reads until the user presses Enter</code></pre>
+    </section>
     <section class="note" id="files">
       <span class="tag">io</span>
       <span class="src src-notes">personal notes</span>
@@ -924,7 +1026,6 @@ defer resp.Body.Close()</code></pre>
 }</code></pre>
       <p>This returns one string per line, similar to Python's <code>readlines()</code>.</p>
     </section>
-
     <section class="note" id="clean-string">
       <span class="tag">io</span>
       <span class="src src-external">external</span>
@@ -944,8 +1045,519 @@ func cleanString(s string) string {
 }
 
 cleanString("Hello, world!!") // "Hello world"</code></pre>
-    </section>
+      <h3>Unicode-aware version (used in the word-count program)</h3>
+      <p>
+        <code>a-zA-Z</code> only covers English letters, so a word like
+        <code>café</code> would lose its <code>é</code>. The
+        <code>\p{L}</code> (any letter) and <code>\p{N}</code> (any
+        number) classes keep letters from every alphabet. Spaces aren't
+        kept here because this version cleans one word at a time, after
+        <code>strings.Fields</code> has already split the line.
+      </p>
+      <pre><code>var nonWord = regexp.MustCompile(`[^\p{L}\p{N}]+`)
 
+func cleanString(s string) string {
+    return nonWord.ReplaceAllString(s, "")
+}</code></pre>
+      <p>
+        Counting with <code>wordcounts[cleaned]++</code> needs no
+        "is the key there yet?" check: a missing key reads as
+        <code>0</code>, so the first sighting stores <code>1</code>. Wrap
+        the key in <code>strings.ToLower</code> to count "The" and "the"
+        together.
+      </p>
+    </section>
+    </div>
+
+    <div class="chapter" id="ch-pointers" data-title="Modules, pointers, methods" data-num="7">
+      <header class="chapter-head"><span class="chapter-num">Chapter 7</span><h2 class="chapter-title">Modules, pointers, methods</h2><p>Part 3 slides, Learning Go ch. 6</p></header>
+<section class="note" id="part3-admin">
+  <span class="tag">admin</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Part 3 at a glance</h2>
+  <p>
+    The "Pointers to Methods" slideshow covers dependency management,
+    pointers, methods, and interfaces. The order matters: Go's interfaces
+    don't make sense until you know how Go attaches methods to types,
+    and methods don't make sense until you know pointers.
+  </p>
+  <ul>
+    <li>Reading: chapters 6 and 7 of <em>Learning Go</em> (pointers on page 120).</li>
+    <li>Listening: episode 78 (Aug 22, 2026) of <em>The Programming Podcast</em>, due next class (one week for undergrads).</li>
+    <li>Discussed in class: a Medium article on engineering interview practices in the age of AI.</li>
+  </ul>
+</section>
+<section class="note" id="modules">
+  <span class="tag">tooling</span>
+  <span class="src src-slides">slideshow</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Dependencies: go get → go.mod</h2>
+  <p>
+    Originally, <code>go get &lt;project git location&gt;</code> downloaded a
+    project, compiled it, and made it available as a library to
+    <em>every</em> Go project on your machine. It usually pulled the
+    latest version.
+  </p>
+  <pre><code>go get -d -u gobot.io/x/gobot/...   // the old way</code></pre>
+  <h3>What went wrong (Quiz 2, Q3, full credit)</h3>
+  <ul>
+    <li><strong>Security:</strong> always pulling the latest version means someone can slip malicious code into a project, a bigger risk now with LLM-generated "slop" submissions.</li>
+    <li><strong>No pinning:</strong> dependencies were shared, so you couldn't have one project on v1 of a web framework and another on v2.</li>
+    <li><strong>No inventory:</strong> with shared dependencies, it was hard to tell exactly which dependencies each of several large projects used.</li>
+  </ul>
+  <h3>Go modules</h3>
+  <p>
+    Introduced gradually in Go 1.11 and 1.12, and the default since 1.13.
+    Each project gets a <code>go.mod</code> file listing just
+    <em>its</em> dependencies, each pinned to a version. GoLand helps keep
+    it in sync. The old way is no longer easy to use, but code written
+    for it lives on, since useful code lives a long time.
+  </p>
+  <pre><code>go mod init github.com/chris/project1   // creates go.mod
+go get github.com/gorilla/mux@v1.8.1     // add a dependency at a pinned version
+go mod tidy                              // add missing / remove unused deps</code></pre>
+  <pre><code>// go.mod
+module github.com/chris/project1
+
+go 1.23
+
+require github.com/gorilla/mux v1.8.1</code></pre>
+  <p>
+    <span class="src src-external">external</span> Modules also write a
+    <code>go.sum</code> file with a cryptographic checksum of each
+    dependency. If the downloaded code ever changes for the same version,
+    the build fails, which directly addresses the "slip malicious code
+    in" problem.
+  </p>
+</section>
+<section class="note" id="pointers">
+  <span class="tag">pointers</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Pointers</h2>
+  <p>
+    A <strong>pointer</strong> is a variable containing the memory
+    address of a value we care about. The book's example pretends these
+    are the only two things in memory:
+  </p>
+  <pre><code>var x int32 = 10   // 4 bytes, addresses 1-4
+var y bool = true  // 1 byte, address 5
+
+Value     0    0    0    10 |  1
+Address   1    2    3    4  |  5
+Variable  x                 |  y</code></pre>
+  <p>
+    An <code>int32</code> takes four bytes, so <code>x</code> spans four
+    addresses. A <code>bool</code> needs one. A pointer to <code>x</code>
+    just stores <code>1</code>, the address where <code>x</code> starts.
+  </p>
+  <pre><code>pointerX := &amp;x      // holds 1, the address of x
+pointerY := &amp;y      // holds 5, the address of y
+var pointerZ *string // holds nothing yet: nil, the zero value of a pointer
+
+Value     0 0 0 10 | 1 | 0 0 0 1   | 0 0 0 5   | 0 0 0 0
+Address   1 2 3 4  | 5 | 6 7 8 9   | 10 ... 13 | 14 ... 17
+Variable  x        | y | pointerX  | pointerY  | pointerZ</code></pre>
+  <p>
+    Pointers are themselves values stored in memory: each pointer above
+    takes its own slots. Because Go is memory safe, there is no pointer
+    arithmetic: you can't add 1 to <code>pointerX</code> to walk to the
+    next byte the way you can in C.
+  </p>
+</section>
+<section class="note" id="pointer-ops">
+  <span class="tag">pointers</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>The * and &amp; operators</h2>
+  <ul>
+    <li>Have a <strong>value</strong> variable and want a pointer? Use <code>&amp;</code> ("address of").</li>
+    <li>Have a <strong>pointer</strong> and want the value it points to? Use <code>*</code> ("dereference").</li>
+    <li>Want a variable whose type is "pointer to T"? Write the type as <code>*T</code>.</li>
+  </ul>
+  <pre><code>x := 10
+p := &amp;x          // p is an *int holding x's address
+fmt.Println(*p)  // 10, follow the pointer to read
+*p = 20          // follow the pointer to write
+fmt.Println(x)   // 20, x itself changed
+
+var q *int       // nil
+fmt.Println(*q)  // runtime panic: nil pointer dereference</code></pre>
+  <p>
+    The same <code>*</code> symbol does two jobs: in a type
+    (<code>*int</code>, <code>*bankAccount</code>) it means "pointer to,"
+    and in an expression (<code>*p</code>) it means "the value at." On the
+    quiz, the <code>*</code> in <code>func (account *bankAccount)</code>
+    is the type meaning: the receiver is a pointer.
+  </p>
+</section>
+<section class="note" id="methods">
+  <span class="tag">methods</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Methods</h2>
+  <p>
+    In object-oriented languages, methods are functions attached to
+    objects. In Python and Java they live inside the class definition; in
+    C++, roughly, in the header file. In Go, methods are called on
+    <strong>types</strong> (usually structs) but can be declared anywhere
+    in the same package.
+  </p>
+  <pre><code>// a simple 2D game struct, pretend it lives in a game library
+type Sprite struct {
+    Pic      BitMap
+    Location Point
+}</code></pre>
+  <p>
+    A method looks like a function with an extra parameter in front of
+    the name, called the <strong>receiver</strong>. That's the "object"
+    the method is called on.
+  </p>
+  <pre><code>func (&lt;receiver&gt;) &lt;name&gt;(&lt;params&gt;) &lt;return type&gt; {
+
+func (spr *Sprite) move(dX, dY int) {
+    // do stuff here
+}</code></pre>
+  <p>
+    The receiver name (<code>spr</code>) plays the role of
+    <code>this</code> in Java or <code>self</code> in Python, but you
+    choose it yourself. Convention is a short abbreviation of the type
+    name. Methods belonging to the same interface should be declared
+    together.
+  </p>
+</section>
+<section class="note" id="receivers">
+  <span class="tag">methods</span>
+  <span class="src src-slides">slideshow</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Pointer receivers vs. value receivers</h2>
+  <p>
+    "Mutating vs. non-mutating" is mostly a C++ term (<code>const</code>
+    methods). Java mostly just makes whole objects immutable, and Python
+    lets you add methods and fields at runtime. A non-mutating method is
+    one that can't change the object, or whose changes the caller never
+    sees.
+  </p>
+  <h3>Value receiver: works on a copy</h3>
+  <p>
+    Go passes everything by value, receivers included. A value receiver
+    gets a copy of the struct, so any changes vanish when the method
+    returns. Use it for methods that only read.
+  </p>
+  <pre><code>func (spr Sprite) GetSize() (width int, height int) {
+    // read-only work here
+}
+
+character := LoadCharacter()
+w, h := character.GetSize()</code></pre>
+  <h3>Pointer receiver: works on the original</h3>
+  <p>
+    Call the method on a pointer and the copy is a copy of the
+    <em>pointer</em>, which still points at the same object, so changes
+    stick.
+  </p>
+  <pre><code>func (spr *Sprite) move(dX, dY int) { ... }
+
+character := LoadCharacter()
+(&amp;character).move(30, 20)</code></pre>
+  <h3>The quiz example, traced</h3>
+  <pre><code>func (account *bankAccount) updateName(newName string) {   // mutable
+    account.name = newName
+}
+
+func (account bankAccount) updateNameValue(newName string) { // immutable
+    account.name = newName // changes the copy, lost on return
+}
+
+acct := bankAccount{name: "Chris", balance: 1000}
+acct.updateNameValue("Bob")
+fmt.Println(acct.name) // Chris
+acct.updateName("Bob")
+fmt.Println(acct.name) // Bob</code></pre>
+  <p>
+    (Go won't let both methods share one name, so the value version is
+    renamed here. Output verified by running it.)
+  </p>
+  <h3>Choosing</h3>
+  <ul>
+    <li>The method needs to change the struct → pointer receiver.</li>
+    <li>The struct is large → pointer receiver, to avoid copying it on every call.</li>
+    <li><span class="src src-external">external</span> If any method on a type uses a pointer receiver, the usual Go style is to make all of them pointer receivers for consistency.</li>
+  </ul>
+</section>
+<section class="note" id="method-sugar">
+  <span class="tag">methods</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Syntactic sugar: Go takes the address for you</h2>
+  <p>
+    "Programmers are lazy," and <code>(&amp;character).move(30, 20)</code>
+    is ugly. If you call a pointer-receiver method on a value held in a
+    <strong>variable</strong>, Go takes the variable's address
+    automatically:
+  </p>
+  <pre><code>(&amp;character).move(30, 20)  // what actually happens
+character.move(30, 20)      // what you write; the pointer is passed for you</code></pre>
+  <p>
+    <span class="src src-external">external</span> It works the other
+    way too: calling a value-receiver method through a pointer
+    dereferences it automatically. The "held in a variable" part is the
+    catch. Go can only take the address of something addressable, so
+    this fails:
+  </p>
+  <pre><code>Sprite{}.move(1, 1) // compile error: can't take the address of a literal</code></pre>
+</section>
+<section class="note" id="nil-receivers">
+  <span class="tag">methods</span>
+  <span class="src src-slides">slideshow</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Calling methods on nil</h2>
+  <p>
+    You can call a pointer-receiver method on a nil pointer without an
+    immediate error. Go just passes <code>nil</code> in as the receiver.
+    The professor framed it as a partial fix for the "billion dollar
+    mistake" (Tony Hoare's name for null references). But your method
+    still has to avoid panicking, which means checking for nil before
+    touching any field:
+  </p>
+  <pre><code>func (spr *Sprite) GetSize() (width int, height int) {
+    if spr == nil {
+        return 0, 0 // zero values, no panic
+    }
+    return spr.Pic.Width, spr.Pic.Height
+}
+
+var badGuy *Sprite        // badGuy is nil
+w, h := badGuy.GetSize()  // 0 0</code></pre>
+  <p>
+    This is exactly the "check nil first" comment on Quiz 2, Q2: the
+    first line of any pointer-receiver method that reads fields should be
+    the nil check.
+  </p>
+  <p>
+    <span class="src src-external">external</span> This only works for
+    <strong>pointer</strong> receivers. If <code>GetSize</code> had a
+    value receiver (<code>spr Sprite</code>), Go would have to
+    dereference the nil pointer to make the copy, and that panics before
+    your code runs.
+  </p>
+</section>
+<section class="note" id="method-locations">
+  <span class="tag">methods</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Where methods can live</h2>
+  <p>
+    Go's methods feel a bit like Objective-C. You can add a method to
+    any struct in the package, from any file in the package.
+  </p>
+  <ul>
+    <li><strong>Neat:</strong> you can split a type's behavior across files however makes sense.</li>
+    <li><strong>Scary:</strong> to know everything a type can do, you have to look through the whole folder, by eye, with <code>grep</code>, or with an LLM (and double check the LLM).</li>
+    <li>Keep private data lowercase so code outside the package can't touch it.</li>
+  </ul>
+  <p>
+    <span class="src src-external">external</span> "Same package" is a
+    hard rule. You can't add methods to a type from another package,
+    including built-ins like <code>int</code>. To do that, declare your
+    own type first: <code>type Celsius float64</code>, then add methods
+    to <code>Celsius</code>.
+  </p>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-interfaces" data-title="Interfaces" data-num="8">
+      <header class="chapter-head"><span class="chapter-num">Chapter 8</span><h2 class="chapter-title">Interfaces</h2><p>Part 3 slides, Learning Go ch. 7</p></header>
+<section class="note" id="interfaces">
+  <span class="tag">interfaces</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Interfaces</h2>
+  <p>
+    In Java, an interface is a promise that some methods will be
+    available. Go's interfaces are the same kind of contract, and even
+    the declaration looks Java-like (example from gobyexample.com):
+  </p>
+  <pre><code>type geometry interface {
+    area() float64
+    perim() float64
+}</code></pre>
+</section>
+<section class="note" id="interfaces-implicit">
+  <span class="tag">interfaces</span>
+  <span class="src src-slides">slideshow</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Interfaces are implicit</h2>
+  <p>
+    To make type <code>T</code> implement an interface, just write every
+    method the interface requires, with <code>T</code> as the receiver.
+    There's no <code>implements</code> keyword like in Java.
+  </p>
+  <pre><code>type rect struct {
+    width, height float64
+}
+type circle struct {
+    radius float64
+}
+
+func (r rect) area() float64  { return r.width * r.height }
+func (r rect) perim() float64 { return 2*r.width + 2*r.height }
+
+func (c circle) area() float64  { return math.Pi * c.radius * c.radius }
+func (c circle) perim() float64 { return 2 * math.Pi * c.radius }
+
+// rect and circle both satisfy geometry now, without saying so</code></pre>
+  <h3>The checklist (where Quiz 2, Q1 went wrong)</h3>
+  <ol>
+    <li>List every method the interface requires.</li>
+    <li>Find a method with the exact same name, parameters, and return types for the type.</li>
+    <li>If even one is missing, the type does not satisfy the interface.</li>
+    <li>Check the receivers: a method on <code>*T</code> counts for <code>*T</code> only, not for plain <code>T</code>.</li>
+  </ol>
+  <p>
+    <span class="src src-external">external</span> That last rule is
+    called the <strong>method set</strong>. A value of type <code>T</code>
+    only has the value-receiver methods. A <code>*T</code> has both. The
+    compiler's error message says it directly:
+  </p>
+  <pre><code>ba does not implement sa (method addInterest has pointer receiver)</code></pre>
+</section>
+<section class="note" id="interface-values">
+  <span class="tag">interfaces</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Interfaces as variables and parameters</h2>
+  <p>An interface can be a variable's type, holding any value that satisfies it:</p>
+  <pre><code>var shape geometry = rect{width: 5, height: 4}
+a := shape.area() // 20</code></pre>
+  <p>
+    The real power: write a function that takes an interface, and it
+    accepts anything that satisfies the interface, including types that
+    don't exist yet.
+  </p>
+  <pre><code>func measure(g geometry) {
+    fmt.Println(g.area(), g.perim())
+}
+
+measure(rect{width: 3, height: 4})
+measure(circle{radius: 5})</code></pre>
+  <p>
+    Idiomatic Go rule of thumb: <strong>accept interfaces, return
+    structs.</strong> Interface parameters keep your functions flexible.
+    Concrete return types give callers everything the struct offers. Both
+    help future-proof your code.
+  </p>
+</section>
+<section class="note" id="empty-interface">
+  <span class="tag">interfaces</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>interface{} and any</h2>
+  <p>
+    <code>interface{}</code> is the empty interface. It requires zero
+    methods, and every type has at least zero methods, so it matches
+    anything. Make it a parameter type and the function accepts any
+    value of any type. Recent Go versions predefine <code>any</code> as
+    an alias for <code>interface{}</code>.
+  </p>
+  <pre><code>func describe(v any) {
+    fmt.Printf("%v is a %T\n", v, v)
+}
+
+describe(42)      // 42 is a int
+describe("hi")    // hi is a string</code></pre>
+  <p>
+    <strong>Use it very sparingly.</strong> An <code>any</code> parameter
+    throws away the static typing that makes Go safe, and you'll need
+    type assertions to get the real value back out. Generics (later in
+    the semester) cover many of the cases where people used to reach for
+    it.
+  </p>
+</section>
+<section class="note" id="dynamic-dispatch">
+  <span class="tag">interfaces</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Dynamic dispatch</h2>
+  <p>
+    <strong>Dynamic dispatch</strong> (late binding) means the program
+    decides which method body to run at runtime, based on the actual
+    type of the object. <strong>Static dispatch</strong> (early binding)
+    means the compiler decides ahead of time from the declared type.
+  </p>
+  <ul>
+    <li><span class="src src-external">external</span> <strong>C++:</strong> dynamic only for <code>virtual</code> functions called through a pointer or reference. Everything else is static.</li>
+    <li><span class="src src-external">external</span> <strong>Java:</strong> instance methods are dynamic by default. Static, private, and final methods are bound early.</li>
+    <li><strong>Python:</strong> interpreted, so it's not really an issue.</li>
+    <li><strong>Go:</strong> methods called through an interface use dynamic dispatch. Methods called on a concrete type are static.</li>
+  </ul>
+  <pre><code>shapes := []geometry{rect{3, 4}, circle{1}}
+for _, s := range shapes {
+    fmt.Println(s.area()) // rect's area, then circle's, chosen at runtime
+}</code></pre>
+</section>
+<section class="note" id="type-assertions">
+  <span class="tag">interfaces</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Type assertions</h2>
+  <p>
+    A type assertion checks or converts an interface value to its actual
+    concrete type, or to another interface type. For interface variable
+    <code>x</code> and type <code>T</code>:
+  </p>
+  <pre><code>t := x.(T)       // x as a T, or PANIC if it isn't one
+
+t, ok := x.(T)   // just checking: no panic
+// ok is true and t is the T if x holds a T
+// otherwise ok is false and t is T's zero value</code></pre>
+  <p>
+    <span class="src src-external">external</span> The slide says the
+    failed value is <code>nil</code>. That's true for pointer, slice,
+    map, and interface types, but in general it's the zero value of
+    <code>T</code>: asserting to <code>string</code> on failure gives
+    <code>""</code>, to <code>int</code> gives <code>0</code>.
+  </p>
+  <h3>The idiomatic form</h3>
+  <pre><code>if file, ok := w.(*os.File); ok {
+    // use file here, as an *os.File
+}</code></pre>
+  <p>
+    This is the if-statement init form from the control flow notes: the
+    first statement does the assignment, the second checks
+    <code>ok</code>.
+  </p>
+  <h3><span class="src src-external">external</span> Type switch</h3>
+  <p>When there are several types to check, a type switch is cleaner than a chain of assertions:</p>
+  <pre><code>switch v := x.(type) {
+case int:
+    fmt.Println("int:", v)
+case string:
+    fmt.Println("string:", v)
+default:
+    fmt.Println("something else")
+}</code></pre>
+</section>
+<section class="note" id="interface-compare">
+  <span class="tag">interfaces</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Comparing interfaces</h2>
+  <p>Two interface values are equal with <code>==</code> if:</p>
+  <ul>
+    <li>both are <code>nil</code>, or</li>
+    <li>they hold the same concrete type, that type is comparable, and the two concrete values are <code>==</code>.</li>
+  </ul>
+  <pre><code>var a, b geometry
+fmt.Println(a == b)  // true, both nil
+
+a = rect{3, 4}
+b = rect{3, 4}
+fmt.Println(a == b)  // true, same type and equal fields
+
+b = circle{1}
+fmt.Println(a == b)  // false, different concrete types</code></pre>
+  <p>
+    <span class="src src-external">external</span> Two traps: comparing
+    interfaces that hold a non-comparable type (a slice, map, or
+    function) compiles but panics at runtime. And an interface holding a
+    nil pointer is <em>not</em> equal to <code>nil</code>, because it
+    still records a concrete type.
+  </p>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-projects" data-title="Projects and examples" data-num="9">
+      <header class="chapter-head"><span class="chapter-num">Chapter 9</span><h2 class="chapter-title">Projects and examples</h2><p>In-class work and Project 1</p></header>
     <section class="note" id="first-project">
       <span class="tag">example</span>
       <span class="src src-inclass">in-class assignment</span>
@@ -1010,7 +1622,6 @@ func main() {
 	}
 }</code></pre>
     </section>
-
     <section class="note" id="example-project">
       <span class="tag">example</span>
       <span class="src src-inclass">in-class assignment</span>
@@ -1089,13 +1700,363 @@ Chester Church</code></pre>
         you run it.
       </p>
     </section>
+<section class="note" id="project-1">
+  <span class="tag">example</span>
+  <span class="src src-project">project</span>
+  <h2>Project 1: menu-driven program</h2>
+  <p>
+    A loop shows a five-option menu, reads the choice with a shared
+    <code>bufio.Reader</code>, and dispatches with a <code>switch</code>.
+    It pulls together most of chapters 1 to 6: input, files, strings,
+    structs, slices, and pass-by-value.
+  </p>
+  <ul>
+    <li><strong>1) Every Xth line:</strong> <code>os.ReadFile</code> + <code>strings.Split</code>, then <code>(i+1)%x == 0</code>. The <code>+1</code> converts 0-based indexes to 1-based line numbers.</li>
+    <li><strong>2) Bytes vs. characters:</strong> <code>len(s)</code> counts bytes, <code>utf8.RuneCountInString(s)</code> counts runes. <code>"héllo"</code> is 6 bytes but 5 characters, since <code>é</code> takes two bytes in UTF-8.</li>
+    <li><strong>3) Struct demo:</strong> passing a <code>Player</code> into a function copies it, so the original's health stays 100.</li>
+    <li><strong>4) Slice demo:</strong> passing a <code>[]Player</code> copies only the slice header, which points at the same array, so <code>players[1].health = 50</code> changes the original.</li>
+  </ul>
 
+  <div class="code-tabs">
+    <div class="code-tab-buttons">
+      <button class="code-tab-btn active" data-tab="p1main">main.go</button>
+      <button class="code-tab-btn" data-tab="p1run">sample run</button>
+    </div>
+    <div class="code-tab-panel active" data-panel="p1main">
+<pre><code>package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+	"unicode/utf8"
+)
+
+type Player struct {
+	name    string
+	health  int
+	IsAlive bool
+}
+
+func main() {
+
+	reader := bufio.NewReader(os.Stdin)
+	choice := ""        //initializing blank string for choice(used in for loop logic)
+	for choice != "5" { //I had several approaches initially but after consulting Claude I landed on this
+		//exact prompt: Given these notes (inserted my notes from class), what would be the most efficient loop condition
+		//to loop through menu options where the exit condition is user entering the string "quit".
+		//give several options along with pros/cons of each and explain why the one you selected as most efficient
+		//is a better option.
+
+		//to be clear, only the actual condition and blank string line were generated by AI.
+		fmt.Print("What would you like to do?(1/2/3/4/5)\n")
+		fmt.Print("1) Print every Xth line of a file\n" +
+			"2) Count bytes and characters in a string\n" +
+			"3) Struct Demo: pass struct into a function\n" +
+			"4) Slice Demo: pass a slice of structs into a function\n" +
+			"5) Quit Program\n")
+		fmt.Print("Enter Choice: ")
+		choice, _ = reader.ReadString('\n')
+		choice = strings.TrimSpace(choice) //removes newline generated from hitting enter key
+
+		switch choice {
+		case "1":
+			fmt.Println("(option 1: print every Xth line of a file)")
+			printXthLine(reader)
+		case "2":
+			fmt.Println("(option 2: counting bytes and characters in a string)")
+			countBytesAndCharacters(reader)
+		case "3":
+			fmt.Println("(option 3: struct demo)")
+			structDemo()
+		case "4":
+			fmt.Println("(option 4: slice of struct demo)")
+			sliceDemo()
+		case "5":
+			fmt.Println("Quitting Program!")
+		default:
+			fmt.Println("Not a valid option, try again.")
+		}
+	}
+}
+
+func printXthLine(reader *bufio.Reader) { // takes in reader as parameter
+	fmt.Print("Enter file name: ")
+	filename, _ := reader.ReadString('\n')
+	filename = strings.TrimSpace(filename) //takes in filename, removes newline
+
+	fileContent, err := os.ReadFile(filename)
+	if err != nil { //if error
+		fmt.Println("Could not read file", err)
+		return
+	}
+
+	fmt.Print("Print every Xth line of a file(Enter a positive integer for X)\n")
+	xLine, _ := reader.ReadString('\n')
+	xLine = strings.TrimSpace(xLine)
+	x, err := strconv.Atoi(xLine)
+	if err != nil {
+		fmt.Println("input was not a positive integer")
+		return
+	}
+	lines := strings.Split(string(fileContent), "\n")
+	for i, line := range lines {
+		if (i+1)%x == 0 { //if the remainder of the current line value(lines start at 1 so i+1,
+			//divided by x is 0 -&gt; current line is xth line -&gt; print,
+			fmt.Println(line)
+		}
+	}
+}
+func countBytesAndCharacters(reader *bufio.Reader) {
+	fmt.Print("Enter a string: ")
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	//utf-8 counting method pulled from: https://www.yellowduck.be/posts/counting-string-length-and-byte-size-using-go
+	//I started coming up with ways to do it and I came to the conclusion that there must be a simpler way than looping through the string
+	//and sure there was an obscure post from 2023 with exactly what I needed for both parts of this function (2 lines total)
+	fmt.Println("Bytes:", len(input))
+	fmt.Println("Characters:", utf8.RuneCountInString(input))
+}
+func structDemo() { //Reference Structs II slides and In Class project 1
+	player := Player{"Mario", 100, true}
+	fmt.Println("Player Stats: ", player)
+	changePlayerHealth(player) //passes a copy of the struct into the function
+	fmt.Println("Player Stats after calling changePlayerHealth (unchanged): ", player)
+	// Health is still 100. Go passes values by value, so a function
+	// parameter is a copy of whatever was passed in, structs included.
+	// changePlayerHealth only ever changed its own copy, never the original.
+}
+
+func changePlayerHealth(player Player) {
+	player.health = 50                                                  //worth noting that this only changes the health of the copy of player inside the function.
+	fmt.Println("Inside changePlayerHealth, after the change:", player) // prints the whole struct
+}
+
+func sliceDemo() { //same reference as previous function
+	players := []Player{
+		{"Mario", 100, true},
+		{"Luigi", 100, false},
+	}
+	fmt.Println("Players: ", players)
+	newChangePlayerHealth(players) // passes the slice into the function
+	fmt.Println("Players after calling changeSecondPlayerHealth (changed): ", players)
+}
+func newChangePlayerHealth(players []Player) {
+	players[1].health = 50                                                  //changes the value of p2 health in original array, not a copy (different application from previous function)
+	fmt.Println("Inside newChangePlayerHealth, after the change:", players) // prints the whole list
+}</code></pre>
+    </div>
+    <div class="code-tab-panel" data-panel="p1run">
+<pre><code>Enter Choice: 2
+Enter a string: héllo
+Bytes: 6
+Characters: 5
+
+Enter Choice: 3
+Player Stats:  {Mario 100 true}
+Inside changePlayerHealth, after the change: {Mario 50 true}
+Player Stats after calling changePlayerHealth (unchanged):  {Mario 100 true}
+
+Enter Choice: 4
+Players:  [{Mario 100 true} {Luigi 100 false}]
+Inside newChangePlayerHealth, after the change: [{Mario 100 true} {Luigi 50 false}]
+Players after calling changeSecondPlayerHealth (changed):  [{Mario 100 true} {Luigi 50 false}]
+
+Enter Choice: 1
+Enter file name: f.txt        (lines: a, b, c, d)
+Print every Xth line of a file(Enter a positive integer for X)
+2
+b
+d
+
+Enter Choice: 5
+Quitting Program!</code></pre>
+    </div>
+  </div>
+
+  <h3>Design choices worth knowing for the quiz</h3>
+  <ul>
+    <li><strong>while-style loop:</strong> <code>choice := ""</code> then <code>for choice != "5"</code>. The empty string guarantees the first pass runs.</li>
+    <li><strong>One shared reader:</strong> the functions take <code>reader *bufio.Reader</code> instead of creating their own. A <code>bufio.Reader</code> reads ahead into a buffer, so a second reader on <code>os.Stdin</code> could miss input the first one already pulled in. Passing a pointer means every function uses the same one.</li>
+    <li><strong>Exported vs. not:</strong> <code>IsAlive</code> is capitalized (exported), <code>name</code> and <code>health</code> aren't. Inside <code>package main</code> it makes no difference.</li>
+    <li><strong>Part 3 connection:</strong> the struct demo is the value-receiver problem in function form. A method <code>func (p *Player) setHealth(h int)</code> would change the original.</li>
+  </ul>
+
+  <h3>Two edge cases found by running it</h3>
+  <ul>
+    <li>
+      <strong>X = 0 crashes.</strong> <code>strconv.Atoi("0")</code>
+      succeeds, so the error check passes, then <code>(i+1) % 0</code>
+      panics with "integer divide by zero." Checking
+      <code>if err != nil || x &lt;= 0</code> matches the prompt's
+      "positive integer."
+    </li>
+    <li>
+      <strong>End of input loops forever.</strong> The
+      <code>ReadString</code> errors are discarded with <code>_</code>.
+      If input closes (Ctrl+D, or a piped file that runs out),
+      <code>ReadString</code> returns <code>""</code> and
+      <code>io.EOF</code>, <code>choice</code> never becomes
+      <code>"5"</code>, and the menu prints "Not a valid option" without
+      end. That's the "never use <code>_</code> for errors" rule from the
+      Errors note showing up in practice.
+    </li>
+  </ul>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-quiz" data-title="Quiz 2 review" data-num="10">
+      <header class="chapter-head"><span class="chapter-num">Chapter 10</span><h2 class="chapter-title">Quiz 2 review</h2><p>Corrected answers, 22/30</p></header>
+<section class="note" id="quiz2-overview">
+  <span class="tag">quiz</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Quiz 2 review: overview (22/30)</h2>
+  <p>
+    All four questions use the same <code>bankAccount</code> code.
+    Points lost were on interfaces (Q1), error handling in a method (Q2),
+    and receivers (Q4). All three are in the Part 3 notes above.
+  </p>
+  <pre><code>package main
+
+import "math"
+
+const InterestRate = 0.05
+
+type bankAccount struct {
+    name    string
+    balance int // design discussion: why int?
+}
+
+type savingsAccount interface {
+    addInterest()
+    getBalance()
+}
+
+func (account *bankAccount) updateName(newName string) {
+    account.name = newName
+}
+
+func (account *bankAccount) addInterest() {
+    // fill in here
+}</code></pre>
+  <pre><code>Q1  interfaces           0/10   bankAccount is NOT a savingsAccount
+Q2  addInterest         10/15   missing the nil check
+Q3  go get vs go.mod    10/10
+Q4  receivers            2/5    key idea is mutable vs. immutable</code></pre>
+</section>
+<section class="note" id="quiz2-q1">
+  <span class="tag">quiz</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Quiz 2, Q1: is a bankAccount a savingsAccount?</h2>
+  <p>
+    <strong>No.</strong> <code>savingsAccount</code> requires
+    <code>addInterest()</code> and <code>getBalance()</code>.
+    <code>bankAccount</code> has <code>updateName</code> and
+    <code>addInterest</code>, but no <code>getBalance</code> anywhere in
+    the package. One missing method means it doesn't satisfy the
+    interface.
+  </p>
+  <p>
+    The original answer had the mechanism right (interfaces are implicit,
+    methods in the same package count) but skipped the step of checking
+    each required method against the code.
+  </p>
+  <h3>Going further: the receiver catch</h3>
+  <p>Even after adding the missing method:</p>
+  <pre><code>func (account *bankAccount) getBalance() int {
+    if account == nil {
+        return 0
+    }
+    return account.balance
+}
+
+var s1 savingsAccount = &amp;bankAccount{} // OK: *bankAccount has both methods
+var s2 savingsAccount = bankAccount{}  // compile error: addInterest has pointer receiver</code></pre>
+  <p>
+    Strictly, only <code>*bankAccount</code> would be a
+    <code>savingsAccount</code>, never plain <code>bankAccount</code>,
+    because both methods have pointer receivers. (Side note: as written,
+    the interface's <code>getBalance()</code> returns nothing. It would
+    normally be <code>getBalance() int</code>.)
+  </p>
+</section>
+<section class="note" id="quiz2-q2">
+  <span class="tag">quiz</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Quiz 2, Q2: fill in addInterest</h2>
+  <p>The answer given:</p>
+  <pre><code>account.balance = math.round(account.balance * (1 + interestRate))</code></pre>
+  <p>
+    The graded deduction was the missing nil check. Running it through
+    the compiler also shows three smaller issues:
+  </p>
+  <ul>
+    <li><code>math.round</code> is lowercase, so it's unexported. The function is <code>math.Round</code>.</li>
+    <li><code>interestRate</code> should be <code>InterestRate</code>. Capitalization is part of the name.</li>
+    <li><code>balance</code> is an <code>int</code>, and Go won't mix it with <code>1.05</code>: <code>(untyped float constant 1.05) truncated to int</code>. Convert to <code>float64</code> first, then back with <code>int(...)</code>, because <code>math.Round</code> takes and returns <code>float64</code>.</li>
+  </ul>
+  <h3>Full-credit version</h3>
+  <pre><code>func (account *bankAccount) addInterest() {
+    if account == nil {
+        return // calling on nil is legal, so handle it first
+    }
+    interest := float64(account.balance) * InterestRate
+    account.balance += int(math.Round(interest))
+}</code></pre>
+  <p>
+    Verified: a balance of 1000 becomes 1050, and calling it on a nil
+    <code>*bankAccount</code> does nothing instead of panicking.
+  </p>
+  <h3>"Design discussion: why int?"</h3>
+  <p>
+    <span class="src src-external">external</span> Money is usually
+    stored as an integer number of cents rather than a float.
+    <code>float64</code> can't represent most decimal fractions exactly
+    (0.1 + 0.2 isn't exactly 0.3), so errors pile up over many
+    transactions. Integers stay exact, and you round once, on purpose,
+    when computing interest.
+  </p>
+</section>
+<section class="note" id="quiz2-q4">
+  <span class="tag">quiz</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Quiz 2, Q4: pointer receiver vs. value receiver</h2>
+  <pre><code>func (account *bankAccount) updateName(newName string) {  // mutable
+    account.name = newName
+}
+
+func (account bankAccount) updateName(newName string) {   // immutable
+    account.name = newName
+}</code></pre>
+  <p>
+    The answer given described the <code>*</code> as "returns the memory
+    address" vs. "returns the value at a memory address." Neither method
+    returns anything. The question is about what each one can change.
+  </p>
+  <h3>Full-credit answer</h3>
+  <p>
+    The pointer receiver gets a copy of the <em>address</em>, so it
+    changes the caller's original <code>bankAccount</code>, and the new
+    name sticks (mutable). The value receiver gets a <em>copy of the
+    struct</em>, so it only changes the copy. The new name is lost when
+    the method returns, and the caller's account is unchanged
+    (immutable).
+  </p>
+  <p>See the traced example in <a href="#receivers">Pointer receivers vs. value receivers</a>.</p>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-practice" data-title="Practice questions" data-num="11">
+      <header class="chapter-head"><span class="chapter-num">Chapter 11</span><h2 class="chapter-title">Practice questions</h2><p>Eighteen traced questions with answers</p></header>
     <section class="note" id="practice-intro">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
       <h2>Practice questions: how to use these</h2>
       <p>
-        Thirteen practice questions with answers, written to match the
+        Eighteen practice questions (1 to 13 from earlier units, 14 to 18 on pointers, methods, and interfaces) with answers, written to match the
         kinds of questions on the quiz: trace what code prints, fix code
         so it compiles, and explain how you would solve something. Each
         one lists the notes that help and then the full answer.
@@ -1108,7 +2069,6 @@ Chester Church</code></pre>
         <li>Ask "is every declared variable and import used?" Unused ones will not compile.</li>
       </ul>
     </section>
-
     <section class="note" id="practice-1">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1140,7 +2100,6 @@ fmt.Println(sum)</code></pre>
         enter another pass. It does not cap the value.
       </p>
     </section>
-
     <section class="note" id="practice-2">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1172,7 +2131,6 @@ z := x + y</code></pre>
         to use is "explicit type conversion."
       </p>
     </section>
-
     <section class="note" id="practice-3">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1230,7 +2188,6 @@ for i in range(len(nums)):
         <code>len(nums)</code> in the classic loop.
       </p>
     </section>
-
     <section class="note" id="practice-4">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1291,7 +2248,6 @@ fmt.Println(len(lines))</code></pre>
         have to look at, and the unused-variable rule forces you to.
       </p>
     </section>
-
     <section class="note" id="practice-5">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1331,7 +2287,6 @@ deferred 1</code></pre>
       </p>
       <p><strong>Pattern to remember:</strong> immediate lines print first, deferred lines print after the function ends, in reverse order.</p>
     </section>
-
     <section class="note" id="practice-6">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1391,8 +2346,6 @@ func getFile() []string {
         <li>Words with punctuation, like <code>time.</code> and <code>time</code>, count separately. The regex utility earlier on this page cleans that up.</li>
       </ul>
     </section>
-
-
     <section class="note" id="practice-7">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1434,7 +2387,6 @@ func main() {
         outer function makes a new set.
       </p>
     </section>
-
     <section class="note" id="practice-8">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1472,7 +2424,6 @@ func main() {
         supplies both values the signature promises.
       </p>
     </section>
-
     <section class="note" id="practice-9">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1523,7 +2474,6 @@ matched yes</code></pre>
         case.
       </p>
     </section>
-
     <section class="note" id="practice-10">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1564,7 +2514,6 @@ fmt.Println(b, ok2)</code></pre>
         a different <code>ok</code>.
       </p>
     </section>
-
     <section class="note" id="practice-11">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1617,7 +2566,6 @@ true
         <code>public</code>/<code>private</code> keywords.
       </p>
     </section>
-
     <section class="note" id="practice-12">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1661,7 +2609,6 @@ fmt.Println(names[:2])</code></pre>
       <pre><code>index   0     1      2      3     4
 value   Ed    Ann    Sam    Li    Kim</code></pre>
     </section>
-
     <section class="note" id="practice-13">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
@@ -1714,11 +2661,160 @@ func main() {
         pointer.
       </p>
     </section>
+<section class="note" id="practice-14">
+  <span class="tag">practice</span>
+  <span class="src src-practice">practice question</span>
+  <h2>Practice 14: what does this print? (pointers)</h2>
+  <pre><code>x := 10
+y := x
+p := &amp;x
+*p = 20
+y = 30
+fmt.Println(x, y, *p)</code></pre>
+  <h3>Notes that help</h3>
+  <ul>
+    <li><code>y := x</code> copies the value. <code>p := &amp;x</code> copies the address.</li>
+    <li>Writing through <code>*p</code> changes whatever <code>p</code> points at.</li>
+  </ul>
+  <h3>Answer</h3>
+  <pre><code>20 30 20</code></pre>
+  <p>
+    <code>y</code> is an independent copy, so setting it to 30 never
+    touches <code>x</code>. <code>p</code> points at <code>x</code>, so
+    <code>*p = 20</code> changes <code>x</code>, and <code>*p</code>
+    reads it back.
+  </p>
+</section>
+<section class="note" id="practice-15">
+  <span class="tag">practice</span>
+  <span class="src src-practice">practice question</span>
+  <h2>Practice 15: what does this print? (receivers)</h2>
+  <pre><code>type Counter struct {
+    n int
+}
 
+func (c Counter) IncValue()    { c.n++ }
+func (c *Counter) IncPointer() { c.n++ }
+
+func main() {
+    c := Counter{}
+    c.IncValue()
+    c.IncValue()
+    c.IncPointer()
+    fmt.Println(c.n)
+}</code></pre>
+  <h3>Notes that help</h3>
+  <ul>
+    <li>A value receiver works on a copy. A pointer receiver works on the original.</li>
+    <li><code>c.IncPointer()</code> is sugar for <code>(&amp;c).IncPointer()</code>.</li>
+  </ul>
+  <h3>Answer: 1</h3>
+  <p>
+    Both <code>IncValue</code> calls increment a copy that's thrown away.
+    Only <code>IncPointer</code> reaches the real <code>c</code>.
+  </p>
+</section>
+<section class="note" id="practice-16">
+  <span class="tag">practice</span>
+  <span class="src src-practice">practice question</span>
+  <h2>Practice 16: does it satisfy the interface?</h2>
+  <pre><code>type Shape interface {
+    Area() float64
+    Name() string
+}
+
+type Square struct{ side float64 }
+
+func (s Square) Area() float64 { return s.side * s.side }
+func (s *Square) Name() string { return "square" }
+
+var a Shape = Square{2}   // line A
+var b Shape = &amp;Square{2}  // line B</code></pre>
+  <h3>Notes that help</h3>
+  <ul>
+    <li>Check every method the interface lists.</li>
+    <li>A value of <code>T</code> has only value-receiver methods. A <code>*T</code> has both kinds.</li>
+  </ul>
+  <h3>Answer</h3>
+  <p>
+    <strong>Line A fails</strong>: <code>Name</code> has a pointer
+    receiver, so plain <code>Square</code> is missing it.
+    <strong>Line B compiles</strong>: <code>*Square</code> has both
+    <code>Area</code> and <code>Name</code>.
+  </p>
+</section>
+<section class="note" id="practice-17">
+  <span class="tag">practice</span>
+  <span class="src src-practice">practice question</span>
+  <h2>Practice 17: what does this print? (type assertions)</h2>
+  <pre><code>var v any = 42
+
+n, ok := v.(int)
+fmt.Println(n, ok)
+
+s, ok := v.(string)
+fmt.Printf("%q %v\n", s, ok)
+
+f := v.(float64)
+fmt.Println(f)</code></pre>
+  <h3>Notes that help</h3>
+  <ul>
+    <li>The comma-ok form never panics. On failure, the value is the zero value of the asserted type.</li>
+    <li>The single-value form panics if the type is wrong.</li>
+  </ul>
+  <h3>Answer</h3>
+  <pre><code>42 true
+"" false
+panic: interface conversion: interface {} is int, not float64</code></pre>
+  <p>
+    <code>42</code> is an <code>int</code>, not a <code>float64</code>.
+    An untyped literal stored in <code>any</code> takes its default type,
+    and integer literals default to <code>int</code>.
+  </p>
+</section>
+<section class="note" id="practice-18">
+  <span class="tag">practice</span>
+  <span class="src src-practice">practice question</span>
+  <h2>Practice 18: fix the code (nil receiver)</h2>
+  <pre><code>type Wallet struct {
+    cents int
+}
+
+func (w *Wallet) Deposit(amount int) {
+    w.cents += amount
+}
+
+func main() {
+    var w *Wallet
+    w.Deposit(500)
+}</code></pre>
+  <h3>Notes that help</h3>
+  <ul>
+    <li>Calling a pointer-receiver method on nil is legal. Touching a field through nil is not.</li>
+    <li>Quiz 2 feedback: check nil first.</li>
+  </ul>
+  <h3>Answer</h3>
+  <p>
+    It compiles, but <code>w.cents</code> dereferences nil and panics at
+    runtime. Guard the method, and give <code>main</code> a real wallet:
+  </p>
+  <pre><code>func (w *Wallet) Deposit(amount int) {
+    if w == nil {
+        return
+    }
+    w.cents += amount
+}
+
+func main() {
+    w := &amp;Wallet{}  // or: var w Wallet; w.Deposit(500)
+    w.Deposit(500)
+    fmt.Println(w.cents) // 500
+}</code></pre>
+</section>
     <section class="note" id="practice-recap">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
-      <h2>Practice recap: all thirteen lessons in one place</h2>
+      <h2>Practice recap: all eighteen lessons in one place</h2>
       <ol>
         <li><strong>Loop trace:</strong> <code>sum += sum</code> doubles the value, and the condition is checked before each pass. The loop runs once more at 64 and ends at 128.</li>
         <li><strong>Mixed types:</strong> Go never mixes types. Convert explicitly with <code>float64(y)</code>.</li>
@@ -1733,6 +2829,11 @@ func main() {
         <li><strong>Structs and zero values:</strong> an omitted field gets the zero value. Printing a comparison (<code>p.Name == ""</code>) prints <code>true</code>/<code>false</code>, not the value itself.</li>
         <li><strong>Slicing:</strong> <code>names[:2]</code> means "up to, not including, index 2." That's the first two elements, not the last ones.</li>
         <li><strong>Pass by value:</strong> a struct parameter is a copy. To let a function modify the caller's original, use a pointer (<code>*Player</code>, called with <code>&amp;p1</code>).</li>
+        <li><strong>Pointers:</strong> <code>y := x</code> copies the value, <code>p := &amp;x</code> copies the address. Writing through <code>*p</code> changes <code>x</code>.</li>
+        <li><strong>Receivers:</strong> value receivers change a copy that's thrown away. Only pointer receivers change the original.</li>
+        <li><strong>Interface satisfaction:</strong> check every required method, then check receivers. Pointer-receiver methods only count for <code>*T</code>.</li>
+        <li><strong>Type assertions:</strong> comma-ok never panics and gives the zero value on failure. The single-value form panics.</li>
+        <li><strong>Nil receivers:</strong> calling on nil is legal, touching a field through nil panics. Check nil first.</li>
       </ol>
       <p>
         The pattern behind most of the misses: Go hides a copy or a
@@ -1741,6 +2842,7 @@ func main() {
         does this line actually run?" on every trace question.
       </p>
     </section>
+    </div>
 
   </main>
 </div>
@@ -1797,14 +2899,66 @@ func main() {
   const notes = Array.from(document.querySelectorAll('.note'));
   const toc = document.getElementById('toc');
 
-  // Build table of contents from note headings
-  notes.forEach((note) => {
-    const heading = note.querySelector('h2');
-    const link = document.createElement('a');
-    link.href = '#' + note.id;
-    link.textContent = heading.textContent;
-    toc.appendChild(link);
+  // Build a table of contents grouped by chapter
+  const tools = document.createElement('div');
+  tools.className = 'toc-tools';
+  tools.innerHTML = '<button type="button" data-act="open">expand all</button>' +
+                    '<button type="button" data-act="close">collapse all</button>';
+  toc.appendChild(tools);
+
+  const linkFor = {};
+  const groups = [];
+  document.querySelectorAll('.chapter').forEach((ch) => {
+    const det = document.createElement('details');
+    const sum = document.createElement('summary');
+    const chNotes = ch.querySelectorAll('.note');
+    sum.innerHTML = '<span class="num"></span><span class="t"></span><span class="count"></span>';
+    sum.querySelector('.num').textContent = ch.dataset.num;
+    sum.querySelector('.t').textContent = ch.dataset.title;
+    sum.querySelector('.count').textContent = chNotes.length;
+    det.appendChild(sum);
+    chNotes.forEach((note) => {
+      const link = document.createElement('a');
+      link.href = '#' + note.id;
+      link.textContent = note.querySelector('h2').textContent;
+      det.appendChild(link);
+      linkFor[note.id] = { link, det };
+    });
+    toc.appendChild(det);
+    groups.push(det);
   });
+
+  tools.addEventListener('click', (e) => {
+    const act = e.target.dataset.act;
+    if (act) groups.forEach((d) => { d.open = act === 'open'; });
+  });
+
+  // Open the chapter for a linked note (e.g. a #receivers link)
+  function reveal(id) {
+    const hit = linkFor[id];
+    if (hit) hit.det.open = true;
+  }
+  reveal(location.hash.slice(1));
+  window.addEventListener('hashchange', () => reveal(location.hash.slice(1)));
+  if (!location.hash && groups[0]) groups[0].open = true;
+
+  // Highlight the note currently on screen
+  let current = null;
+  const spy = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const hit = linkFor[entry.target.id];
+      if (!hit || current === hit) return;
+      if (current) {
+        current.link.classList.remove('active');
+        current.det.classList.remove('current');
+      }
+      hit.link.classList.add('active');
+      hit.det.classList.add('current');
+      current = hit;
+    });
+  }, { rootMargin: '0px 0px -75% 0px' });
+  notes.forEach((n) => spy.observe(n));
 
 })();
 
