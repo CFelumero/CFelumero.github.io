@@ -234,13 +234,43 @@
     main { padding: 20px 16px 60px; }
     .note { padding: 1.1rem 1rem; }
   }
+  .src-guide { color: #9a6700; border-color: #9a6700; }
+  .note h3 .src { vertical-align: 2px; }
+  .chapter-mt .chapter-head { border-bottom-color: #9a6700; }
+  .chapter-mt .chapter-num { color: #9a6700; }
+  .note.mt { border-left: 4px solid #9a6700; }
+  .note.mt h3 { margin-top: 1.1rem; }
+  .mt-index {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 6px;
+    margin-top: 0.8rem;
+  }
+  .mt-index a {
+    display: block;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+  .mt-index a:hover { border-color: #9a6700; color: #9a6700; }
+  .mt-links {
+    margin-top: 1rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed var(--line);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .mt-links a { white-space: nowrap; }
 </style>
 </head>
 <body>
 
 <header class="top">
   <h1>Go Language Notes</h1>
-  <p>Reference notes from COMP335: syntax, types, control flow, functions, pointers, methods, and interfaces</p>
+  <p>Reference notes from COMP335: syntax, types, control flow, functions, pointers, methods, interfaces, and web data, plus a midterm review</p>
   <div class="src-key">
     Source key:
     <span class="src src-notes">personal notes</span>
@@ -250,6 +280,7 @@
     <span class="src src-practice">practice question</span>
     <span class="src src-project">project</span>
     <span class="src src-quiz">quiz</span>
+    <span class="src src-guide">study guide</span>
   </div>
 </header>
 
@@ -259,8 +290,439 @@
 
   <main id="notes">
 
-    <div class="chapter" id="ch-basics" data-title="Getting started" data-num="1">
-      <header class="chapter-head"><span class="chapter-num">Chapter 1</span><h2 class="chapter-title">Getting started</h2><p>What Go is, formatting, variables, constants</p></header>
+    <div class="chapter chapter-mt" id="ch-midterm" data-title="Midterm review" data-num="1">
+      <header class="chapter-head"><span class="chapter-num">Chapter 1</span><h2 class="chapter-title">Midterm review</h2><p>Study guide order, condensed, with links to full notes</p></header>
+<section class="note mt" id="mt-start">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>Midterm: format and how to use this chapter</h2>
+  <ul>
+    <li><strong>Format:</strong> like the quizzes. Some concepts, some code, some fixing things.</li>
+    <li><strong>Constraints:</strong> open note, open book, closed neighbor, closed search. Navigate manually only: no Ctrl-F, no search, no AI.</li>
+    <li><strong>Content:</strong> chapters 1 to 7 of the book, plus the parts of chapter 13 we covered (encoding/json and net/http).</li>
+  </ul>
+  <p>
+    This chapter follows the study guide's order. Each card condenses one
+    group of topics, and the <strong>full notes</strong> links jump to
+    the original sections. Use the sidebar or these links to get around,
+    since search isn't allowed.
+  </p>
+  <div class="mt-index">
+    <a href="#mt-language">1 · Language basics</a>
+    <a href="#mt-types">2 · Types, constants</a>
+    <a href="#mt-arrays-slices">3 · Arrays, slices</a>
+    <a href="#mt-maps-structs">4 · Maps, structs</a>
+    <a href="#mt-input-control">5 · Input, control flow, _</a>
+    <a href="#mt-functions">6 · Functions, defer</a>
+    <a href="#mt-pointers-methods">7 · go.mod, pointers, methods</a>
+    <a href="#mt-interfaces">8 · Interfaces</a>
+    <a href="#mt-industry">9 · CS and industry</a>
+    <a href="#mt-rest">10 · REST, JSON, net/http</a>
+    <a href="#mt-llm">11 · LLMs</a>
+    <a href="#mt-mistakes">12 · My quiz mistakes</a>
+  </div>
+</section>
+<section class="note mt" id="mt-language">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>1 · Compatibility, features, compiling, style</h2>
+  <h3>Go 1.0 compatibility promise <span class="src src-external">external</span></h3>
+  <p>
+    Your notes don't cover this one, so this summary is from general Go
+    knowledge. Go 1.0 came out in 2012 with a promise: code written for
+    Go 1 will keep compiling and running unchanged on every later Go 1.x
+    release. The language and standard library can grow, but they won't
+    break existing code. That's why there's no Go 2, why old
+    <code>go get</code>-era code still builds, and why "useful code lives
+    a long time." (Exceptions: security fixes, and bugs where the spec
+    was unclear.)
+  </p>
+  <h3>Basic features</h3>
+  <ul>
+    <li><strong>Compiled</strong> to a native binary, not interpreted bytecode.</li>
+    <li><strong>Statically typed:</strong> a variable always holds one type.</li>
+    <li><strong>Structurally typed:</strong> types match by structure (that's why interfaces are implicit).</li>
+    <li><strong>Memory safe</strong> (no pointer arithmetic), <strong>garbage collected</strong>, <strong>built around concurrency</strong>.</li>
+    <li>Built at Google by Griesemer, Pike, and Thompson. Open source, BSD-style license.</li>
+  </ul>
+  <h3>Compiling vs. linking <span class="src src-external">external</span></h3>
+  <ul>
+    <li><strong>Compiling</strong> translates each package's source into object code and catches syntax and type errors.</li>
+    <li><strong>Linking</strong> combines your compiled packages, the standard library, and the runtime into one executable, and resolves references between them. In C, a function that's declared but never defined compiles fine and fails only at link time.</li>
+    <li>Go usually links <strong>statically</strong>: one self-contained binary with no separate libraries to install. <code>go build</code> does both steps.</li>
+  </ul>
+  <h3>Style enforced as compiler errors</h3>
+  <ul>
+    <li>An unused <strong>import</strong> or unused <strong>local variable</strong> is a compile error, not a warning. (Unused package-level variables are allowed.)</li>
+    <li>The opening brace must be on the same line as the <code>func</code>/<code>if</code>/<code>for</code>.</li>
+    <li><code>gofmt</code> rewrites code into the one standard format.</li>
+  </ul>
+  <h3>Comments and statements</h3>
+  <ul>
+    <li>Comments: <code>// line</code> and <code>/* block */</code>, same as C++/Java.</li>
+    <li>Statements end at the end of the line, like Python. The compiler <strong>inserts semicolons automatically</strong>, so it behaves like Java underneath. <code>gofmt</code> strips any you type.</li>
+  </ul>
+  <p class="mt-links">Full notes: <a href="#overview">What Go is</a> · <a href="#gofmt">Style and gofmt</a> · <a href="#comments">Comments</a> · <a href="#statements">How a statement ends</a></p>
+</section>
+<section class="note mt" id="mt-types">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>2 · Basic types, literals, conversion, constants</h2>
+  <h3>Basic types</h3>
+  <ul>
+    <li><code>bool</code>, <code>string</code>.</li>
+    <li>Many sizes of integers: <code>int8/16/32/64</code>, <code>uint8/16/32/64</code>, <code>int</code>, <code>uint</code>. <code>byte</code> = <code>uint8</code>, <code>rune</code> = <code>int32</code>.</li>
+    <li>Two floating point types: <code>float32</code>, <code>float64</code>.</li>
+    <li>In practice, mostly <code>int</code>, <code>float64</code>, <code>string</code>, <code>bool</code>.</li>
+  </ul>
+  <h3>Strings, runes, len vs. rune count</h3>
+  <pre><code>s := "héllo"
+len(s)                     // 6, counts BYTES (é is 2 bytes in UTF-8)
+utf8.RuneCountInString(s)  // 5, counts characters (runes)
+var r rune = 'A'           // single quotes = rune, prints as 65</code></pre>
+  <p><code>for range</code> over a string gives runes, not bytes.</p>
+  <h3>Literal types (more forgiving for numbers)</h3>
+  <ul>
+    <li>Integer literals default to <code>int</code>, float literals to <code>float64</code>. Prefixes: <code>0x</code> hex, <code>0b</code> binary, <code>0o</code> octal.</li>
+    <li>Literals are <strong>untyped until used</strong>, so <code>x * 10</code> works when <code>x</code> is a <code>float64</code>.</li>
+  </ul>
+  <h3>Two kinds of string literal</h3>
+  <pre><code>"tab\there"   // interpreted: \t becomes a real tab
+`tab\there`   // raw: backslash-t stays two characters</code></pre>
+  <h3>Explicit type conversion</h3>
+  <p>Go never auto-converts variables. Call the type like a function:</p>
+  <pre><code>z := x + float64(y)              // y was float32
+var n int = 10.4                 // compile error: loses precision
+float64(acct.balance) * 0.05     // int times float needs a conversion (Quiz 2)</code></pre>
+  <h3>Constants</h3>
+  <pre><code>const InterestRate = 0.05   // compile-time, immutable
+const (
+    Left  = true
+    Right = false
+)</code></pre>
+  <p>Not ALL_CAPS: capitalization controls exporting, not "constant-ness."</p>
+  <p class="mt-links">Full notes: <a href="#types">Basic types</a> · <a href="#literals">Literals</a> · <a href="#type-conversion">Type conversion</a> · <a href="#constants">Constants</a> · <a href="#project-1">Project 1 (bytes vs. characters)</a></p>
+</section>
+<section class="note mt" id="mt-arrays-slices">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>3 · Arrays and slices</h2>
+  <h3>Arrays: the type issue</h3>
+  <ul>
+    <li>Fixed-size, sequential block of same-type elements.</li>
+    <li><strong>The size is part of the type:</strong> <code>[4]int</code> and <code>[10]int</code> are different types.</li>
+    <li>Limitation: a function taking <code>[4]int</code> can't accept <code>[10]int</code>. So almost nobody uses raw arrays.</li>
+  </ul>
+  <h3>Slices: a struct with three items</h3>
+  <ol>
+    <li>A <strong>pointer</strong> to an element of an underlying array</li>
+    <li>The <strong>length</strong> (elements in the slice)</li>
+    <li>The <strong>capacity</strong> (room before the array has to be reallocated)</li>
+  </ol>
+  <pre><code>var empty []int                    // zero value: nil, len 0
+names := []string{"Li", "Kim"}     // literal
+buf := make([]string, 5, 10)       // making a slice: len 5, cap 10 (cap defaults to len)
+names = append(names, "Jung")      // append RETURNS the slice; reassign it
+names = append(names, other...)    // spread another slice
+first := names[:2]                 // shares the same underlying array</code></pre>
+  <h3>Slices as parameters</h3>
+  <p>
+    Passed by value, but the value is the pointer/len/cap header, so a
+    function <strong>can change elements</strong> of the caller's slice
+    (Project 1, option 4). It can't make the caller's variable point
+    somewhere new (an <code>append</code> inside the function isn't seen
+    by the caller).
+  </p>
+  <p class="mt-links">Full notes: <a href="#arrays">Arrays</a> · <a href="#slices">Slices</a> · <a href="#project-1">Project 1 slice demo</a></p>
+</section>
+<section class="note mt" id="mt-maps-structs">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>4 · Maps and structs</h2>
+  <h3>Maps: hash table of key/value pairs</h3>
+  <ul>
+    <li>Keys must be <strong>comparable</strong> (usable with <code>==</code>). Slices, maps, and functions can't be keys.</li>
+  </ul>
+  <pre><code>wages := make(map[string]float32)          // making a map
+wages := map[string]float32{"Ed": 450.17}  // or a literal
+wages["Ann"] = 375.99
+
+v := wages["John"]        // missing key: NO error, gives zero value (0)
+v, ok := wages["John"]    // comma-ok: ok == false tells you it was missing
+counts[word]++            // works on a missing key because it reads 0 first</code></pre>
+  <ul>
+    <li><strong>Ranging over a map:</strong> the order is <strong>randomized every run, on purpose</strong>, as a security defense against hash-flooding attacks.</li>
+    <li>Writing to a <code>nil</code> map panics, so use <code>make</code> first. Reading from one is fine.</li>
+  </ul>
+  <h3>Structs</h3>
+  <pre><code>type Player struct {         // declaring
+    Name   string            // exported: visible outside the package
+    health int               // unexported: package-only
+}
+p1 := Player{"Mario", 100}               // positional literal
+p2 := Player{Name: "Luigi"}              // named literal, health = 0
+type SaveGame struct { P Player; Size int }  // struct as a field: save.P.Name
+type SaveGame2 struct { Player; Size int }   // embedded: save.Name works directly</code></pre>
+  <ul>
+    <li><strong>Accessibility:</strong> capitalized = exported. Inside the same package everything is visible. From another package (including <code>encoding/json</code>!) only capitalized fields are.</li>
+    <li>Passing a struct to a function <strong>copies</strong> it (Project 1, option 3).</li>
+    <li>A struct can't contain itself, only a pointer to itself.</li>
+  </ul>
+  <p class="mt-links">Full notes: <a href="#maps">Maps</a> · <a href="#structs">Structs</a> · <a href="#for-range">for-range (map order)</a> · <a href="#json-decode">JSON and visibility</a></p>
+</section>
+<section class="note mt" id="mt-input-control">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>5 · Input, control flow, files, the _ variable</h2>
+  <h3>Reading from the command line</h3>
+  <pre><code>reader := bufio.NewReader(os.Stdin)       // make ONE and share it
+line, err := reader.ReadString('\n')      // keeps the '\n'...
+line = strings.TrimSpace(line)            // ...so trim it
+n, err := strconv.Atoi(line)              // string to int</code></pre>
+  <h3>if/else</h3>
+  <pre><code>if n := 9; n &lt; 0 {      // no parens, braces required
+} else if n &lt; 10 {      // n is visible in every branch
+} else {
+}</code></pre>
+  <h3>switch</h3>
+  <ul>
+    <li>No fall-through, so no <code>break</code> needed per case. Any comparable type works.</li>
+    <li><strong>Blank switch</strong> (<code>switch { case x &gt; 5: ... }</code>): each case is its own boolean.</li>
+  </ul>
+  <h3>for loops: the only loop</h3>
+  <pre><code>for i := 0; i &lt; 10; i++ { }      // classic
+for sum &lt; 1000 { }               // while-style
+for { }                          // forever, until break
+for i, v := range items { }      // range: index (or key) and a COPY of the value</code></pre>
+  <ul>
+    <li><code>break</code> exits the innermost <code>for</code>/<code>switch</code>/<code>select</code>. <code>continue</code> skips to the next iteration.</li>
+    <li>Changing the range variable doesn't change the collection. Index back in: <code>items[i] = ...</code></li>
+  </ul>
+  <h3>Reading text from a file</h3>
+  <pre><code>contents, err := os.ReadFile(path)    // []byte
+if err != nil { return nil, err }
+lines := strings.Split(string(contents), "\n")</code></pre>
+  <h3>The _ variable (blank identifier)</h3>
+  <ul>
+    <li>Throws away a value you have to receive but don't need: <code>for _, v := range items</code>.</li>
+    <li>Exists because unused variables are compile errors.</li>
+    <li><strong>Never use it to discard an error.</strong> Project 1's <code>choice, _ = reader.ReadString</code> loops forever at end of input.</li>
+  </ul>
+  <p class="mt-links">Full notes: <a href="#console">Console I/O</a> · <a href="#if">if/else</a> · <a href="#switch">switch</a> · <a href="#for">for</a> · <a href="#for-range">for-range and _</a> · <a href="#files">Reading a file</a></p>
+</section>
+<section class="note mt" id="mt-functions">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>6 · Functions and defer</h2>
+  <h3>Returns</h3>
+  <pre><code>func add(x, y int) int { return x + y }                 // one return value
+func divide(a, b float64) (float64, error) { ... }       // multiple: ERROR GOES LAST
+func f(n int) (answer int, err error) { ...; return }    // named return values, "naked" return</code></pre>
+  <ul>
+    <li>A function with no return type needs no <code>return</code>, but a bare <code>return</code> exits early.</li>
+    <li>Error convention: on failure return <code>zero, err</code>. On success return <code>result, nil</code>.</li>
+  </ul>
+  <h3>Parameters are pass-by-value</h3>
+  <p>
+    Every argument is copied: ints, structs, and slice headers. To let a
+    function change the caller's variable, pass a pointer.
+  </p>
+  <h3>Functions as first-class values</h3>
+  <pre><code>op := func(x, y int) int { return x + y }   // assigned to a variable
+apply(op, 3, 4)                             // passed as a parameter
+func counter() func() int { ... }           // returned from a function</code></pre>
+  <h3>Function types: what's part of the type</h3>
+  <ul>
+    <li>The type is <strong>the parameter types, in order, plus the return types</strong>. Parameter names don't matter, and neither does the function's name.</li>
+    <li>A variable of type <code>func(int64, int64) int64</code> accepts any function with exactly that shape. <code>func(int, int) int</code> is a compile error, even with identical logic.</li>
+    <li>Functions can be compared only to <code>nil</code> (their zero value), so they can't be map keys.</li>
+  </ul>
+  <pre><code>var op func(int64, int64) int64
+op = func(a, b int64) int64 { return a * b }  // OK: names differ, types match
+op = func(x, y int) int { return x + y }      // compile error</code></pre>
+  <h3>Closures</h3>
+  <pre><code>func counter() func() int {
+    count := 0
+    return func() int { count++; return count } // captures count
+}
+next := counter(); next(); next() // 1, then 2</code></pre>
+  <h3>defer</h3>
+  <ul>
+    <li>Runs a function call <strong>after the current function returns</strong> (normal return or panic).</li>
+    <li>Multiple defers run <strong>last-in, first-out</strong>.</li>
+    <li>Place it right after the error check: <code>f, err := os.Open(p); if err != nil {...}; defer f.Close()</code></li>
+    <li>Trap: <code>defer</code> inside a loop doesn't run until the whole function ends.</li>
+  </ul>
+  <p class="mt-links">Full notes: <a href="#functions">Functions</a> · <a href="#first-class-functions">Functions as values, function types</a> · <a href="#defer">defer</a> · <a href="#errors">Errors</a></p>
+</section>
+<section class="note mt" id="mt-pointers-methods">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>7 · go.mod, pointers, methods</h2>
+  <h3>go.mod: dependency management</h3>
+  <ul>
+    <li>Old <code>go get</code>: pulled the <em>latest</em> version, shared across all projects on the machine.</li>
+    <li>Problems: malicious code could slip in, no version pinning per project, and no clear record of what each project depends on.</li>
+    <li><code>go.mod</code> (default since Go 1.13): per-project dependencies pinned to versions. <code>go.sum</code> holds checksums.</li>
+  </ul>
+  <h3>Pointers and the * and &amp; operators</h3>
+  <pre><code>x := 10
+p := &amp;x        // &amp; = "address of": p is an *int
+*p = 20        // * = "value at": x is now 20
+var q *int     // zero value nil; *q panics</code></pre>
+  <ul>
+    <li><code>*T</code> in a type means "pointer to T." <code>*p</code> in an expression means "dereference."</li>
+    <li><strong>Pointers as parameters:</strong> the pointer is copied, but it still points at the original, so the function can change it.</li>
+    <li>No pointer arithmetic (memory safe).</li>
+  </ul>
+  <h3>Methods: called on types (structs)</h3>
+  <pre><code>func (acct *bankAccount) updateName(n string) { acct.name = n } // receiver before the name</code></pre>
+  <ul>
+    <li>Declared <strong>outside</strong> the struct, anywhere in the same package (any file).</li>
+    <li>Can't add methods to another package's types. Make your own type first.</li>
+  </ul>
+  <h3>Pointer receiver vs. value receiver</h3>
+  <ul>
+    <li><strong>Pointer receiver (<code>*T</code>): mutable.</strong> It changes the original.</li>
+    <li><strong>Value receiver (<code>T</code>): immutable.</strong> It works on a copy, and changes are lost when it returns.</li>
+    <li><code>v.move()</code> on a variable automatically becomes <code>(&amp;v).move()</code>.</li>
+  </ul>
+  <h3>Calling on a nil pointer</h3>
+  <pre><code>func (acct *bankAccount) addInterest() {
+    if acct == nil { return }  // CHECK NIL FIRST: calling on nil is legal...
+    acct.balance += ...        // ...touching a field through nil panics
+}</code></pre>
+  <p class="mt-links">Full notes: <a href="#modules">go get → go.mod</a> · <a href="#pointers">Pointers</a> · <a href="#pointer-ops">* and &amp;</a> · <a href="#methods">Methods</a> · <a href="#receivers">Receivers</a> · <a href="#nil-receivers">Nil receivers</a></p>
+</section>
+<section class="note mt" id="mt-interfaces">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>8 · Interfaces</h2>
+  <ul>
+    <li><strong>Promise of functionality:</strong> a list of method signatures a type promises to have.</li>
+    <li><strong>Go vs. Java:</strong> Java says <code>implements</code>. Go is <strong>implicit</strong>: write every method and the type satisfies the interface automatically.</li>
+  </ul>
+  <pre><code>type paidEmployee interface { calculatePay() float64 }
+
+func (emp HourlyEmployee) calculatePay() float64 {   // outside the struct!
+    return emp.hourlyrate * emp.NumberOfHours
+}</code></pre>
+  <h3>Does T satisfy the interface? Checklist</h3>
+  <ol>
+    <li>Every method in the interface exists for T (name, params, and return types exact).</li>
+    <li>Pointer-receiver methods count only for <code>*T</code>. Value-receiver methods count for both.</li>
+  </ol>
+  <h3>Interface variables and parameters</h3>
+  <pre><code>var s geometry = rect{3, 4}          // interface variable
+func measure(g geometry) { ... }     // interface parameter: takes ANY geometry</code></pre>
+  <p>Rule of thumb: <strong>accept interfaces, return structs.</strong></p>
+  <h3>interface{} (any)</h3>
+  <p>Zero required methods, so every type matches. Use it sparingly: it throws away static typing.</p>
+  <h3>Type assertions</h3>
+  <pre><code>t := x.(T)        // PANICS if x isn't a T
+t, ok := x.(T)    // safe: ok false, t = zero value of T
+switch v := x.(type) { case int: ...; case string: ... }</code></pre>
+  <h3>Dynamic vs. static dispatch</h3>
+  <ul>
+    <li><strong>Dynamic dispatch (late binding):</strong> which method runs is decided at runtime by the actual type. In Go, that's calls through an interface.</li>
+    <li><strong>Static dispatch (early binding):</strong> decided at compile time from the declared type. In Go, that's calls on a concrete type.</li>
+    <li>C++: dynamic only for <code>virtual</code>. Java: dynamic by default. Python: not really an issue (interpreted).</li>
+  </ul>
+  <p class="mt-links">Full notes: <a href="#interfaces">Interfaces</a> · <a href="#interfaces-implicit">Implicit</a> · <a href="#interface-values">Variables and parameters</a> · <a href="#empty-interface">any</a> · <a href="#type-assertions">Type assertions</a> · <a href="#dynamic-dispatch">Dispatch</a></p>
+</section>
+<section class="note mt" id="mt-industry">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>9 · Computer science in the larger industry</h2>
+  <ul>
+    <li><strong>Jobs discussion:</strong> the current tech job market, plus the Medium article on interview practices in the age of AI.</li>
+    <li><strong>Podcast</strong> (<em>The Programming Podcast</em>, ep. 78): hiring-manager studies on disqualifying behaviors. <strong>Not researching the company</strong> and <strong>showing up late</strong>.</li>
+    <li><strong>PIP:</strong> <em>supposed to</em> give an underperforming employee measurable benchmarks and a real chance to keep the job (retention is cheaper than firing). <em>Often used</em> to remove employees who generate less value than their salaries.</li>
+    <li><strong>News page:</strong> not in these notes yet. Skim it before the exam.</li>
+  </ul>
+  <p>Quiz lesson: when a question names the podcast, answer from the podcast, not the class discussion.</p>
+  <p class="mt-links">Full notes: <a href="#industry">Jobs, podcast, PIPs</a> · <a href="#quiz3-q1">Quiz 3, Q1</a> · <a href="#quiz3-q3">Quiz 3, Q3</a></p>
+</section>
+<section class="note mt" id="mt-rest">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>10 · REST APIs, JSON, net/http</h2>
+  <h3>REST and JSON</h3>
+  <ul>
+    <li><strong>REST API:</strong> lets an application ask a website for data (usually JSON, sometimes XML) instead of scraping the page.</li>
+    <li><strong>JSON format:</strong> text. Objects are <code>{"key": value}</code> and lists are <code>[ ... ]</code>.</li>
+    <li><strong>JSON objects:</strong> like Python dicts or Java records. Go is closer to <strong>Java</strong>: you define structs.</li>
+  </ul>
+  <h3>Go structs for JSON objects</h3>
+  <pre><code>type OpenLibrarySearchResponse struct {
+    Docs []Book `json:"docs"`         // JSON list   -&gt; slice
+}
+type Book struct {
+    Title      string   `json:"title"`        // tag = JSON key name
+    AuthorName []string `json:"author_name"`
+}</code></pre>
+  <p>LLMs are good at generating these. Paste a sample that includes every optional field.</p>
+  <h3>encoding/json: NewDecoder and Decode</h3>
+  <pre><code>err = json.NewDecoder(response.Body).Decode(&amp;jsonResponse) // pointer!</code></pre>
+  <ul>
+    <li><strong>Struct visibility and the decoder:</strong> the decoder is in another package, so it can set <strong>only exported (capitalized) fields</strong>. Lowercase fields are skipped silently: zero value, no error.</li>
+    <li>Missing keys give zero values. Extra keys are ignored. A wrong type is an error. An empty body is <code>io.EOF</code>.</li>
+  </ul>
+  <h3>net/http</h3>
+  <pre><code>apiClient := &amp;http.Client{Timeout: 30 * time.Second}               // client
+request, err := http.NewRequestWithContext(context.Background(),
+                     http.MethodGet, fullAddress, nil)                 // Request
+response, err := apiClient.Do(request)                                // response, error
+defer response.Body.Close()
+if response.StatusCode != http.StatusOK { ... }</code></pre>
+  <ul>
+    <li><strong>Parts of the response:</strong> <code>StatusCode</code> and <code>Body</code> are what we care about. Also <code>Status</code>, <code>Header</code>, <code>ContentLength</code>.</li>
+    <li>The newer way is <code>NewRequestWithContext</code> plus a client with a timeout. <code>http.Get</code> is the 2010s way.</li>
+  </ul>
+  <h3>Kinds of errors to deal with</h3>
+  <ol>
+    <li>Building the request: bad URL.</li>
+    <li><code>Do</code>: no connection, server down, timeout.</li>
+    <li><strong>Bad status code (404, 500): NOT an error from <code>Do</code>. Check it yourself.</strong></li>
+    <li>Decoding: JSON doesn't match the structs, or is cut off.</li>
+  </ol>
+  <p>
+    These aren't programming errors. Python and Java would use
+    <strong>exceptions</strong>, and Go returns errors that have to be
+    handled.
+  </p>
+  <p class="mt-links">Full notes: <a href="#rest-apis">REST</a> · <a href="#json">JSON</a> · <a href="#json-structs">Structs and tags</a> · <a href="#json-decode">Decoder</a> · <a href="#net-http">net/http</a> · <a href="#http-response">Response</a> · <a href="#http-errors">Errors</a> · <a href="#getbookdata">getBookData</a></p>
+</section>
+<section class="note mt" id="mt-llm">
+  <span class="tag">midterm</span>
+  <span class="src src-guide">study guide</span>
+  <h2>11 · LLM discussion</h2>
+  <ul>
+    <li><strong>What they are:</strong> the current hotness in AI. <span class="src src-external">external</span> Models trained on huge amounts of text to predict the next token.</li>
+    <li><strong>What they can do:</strong> help someone who's bad at a task look somewhat competent. Handle small academic-sized projects. Solve limited-scope, self-contained, well-known problems (JSON to Go structs).</li>
+    <li><strong>What they can't:</strong> build something that works within a larger context, or do work that needs specialized knowledge. They often give outdated advice (2010s <code>http.Get</code>).</li>
+    <li>Double-check generated code if you want maintainable software, despite the marketing.</li>
+  </ul>
+  <p class="mt-links">Full notes: <a href="#llm-discussion">LLMs</a> · <a href="#json-structs">LLMs and JSON structs</a></p>
+</section>
+<section class="note mt" id="mt-mistakes">
+  <span class="tag">midterm</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>12 · My quiz mistakes: don't repeat these</h2>
+  <ol>
+    <li><strong>Interface satisfaction:</strong> check <em>every</em> method in the interface against the code before saying yes. (Quiz 2, Q1: <code>getBalance</code> was missing.)</li>
+    <li><strong>Pointer-receiver methods:</strong> the first line is <code>if x == nil { return }</code>. (Quiz 2, Q2.)</li>
+    <li><strong>Mixing <code>int</code> and floats:</strong> convert with <code>float64(...)</code>, and convert back with <code>int(...)</code>. <code>math.Round</code>, with a capital R.</li>
+    <li><strong>Receivers question:</strong> answer with what changes. Pointer = mutates the original. Value = copy, change lost. (Quiz 2, Q4.)</li>
+    <li><strong>Implementing an interface:</strong> the method goes <em>outside</em> the struct with a receiver, and every field needs the receiver prefix (<code>emp.hourlyrate * emp.NumberOfHours</code>). (Quiz 3, Q2.)</li>
+    <li><strong>Industry questions:</strong> answer from the source the question names. (Quiz 3, Q1.)</li>
+  </ol>
+  <p class="mt-links">Full notes: <a href="#quiz2-overview">Quiz 2 review</a> · <a href="#quiz3-overview">Quiz 3 review</a> · <a href="#practice-recap">Practice recap</a></p>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-basics" data-title="Getting started" data-num="2">
+      <header class="chapter-head"><span class="chapter-num">Chapter 2</span><h2 class="chapter-title">Getting started</h2><p>What Go is, formatting, variables, constants</p></header>
     <section class="note" id="overview">
       <span class="tag">basics</span>
       <span class="src src-notes">personal notes</span>
@@ -396,8 +858,8 @@ const (
     </section>
     </div>
 
-    <div class="chapter" id="ch-types" data-title="Types and structs" data-num="2">
-      <header class="chapter-head"><span class="chapter-num">Chapter 2</span><h2 class="chapter-title">Types and structs</h2><p>Basic types, literals, conversion, structs</p></header>
+    <div class="chapter" id="ch-types" data-title="Types and structs" data-num="3">
+      <header class="chapter-head"><span class="chapter-num">Chapter 3</span><h2 class="chapter-title">Types and structs</h2><p>Basic types, literals, conversion, structs</p></header>
     <section class="note" id="types">
       <span class="tag">types</span>
       <span class="src src-notes">personal notes</span>
@@ -546,8 +1008,8 @@ fmt.Println(save.Name) // Player's fields are promoted - no save.Player.Name nee
     </section>
     </div>
 
-    <div class="chapter" id="ch-collections" data-title="Collections" data-num="3">
-      <header class="chapter-head"><span class="chapter-num">Chapter 3</span><h2 class="chapter-title">Collections</h2><p>Arrays, slices, maps</p></header>
+    <div class="chapter" id="ch-collections" data-title="Collections" data-num="4">
+      <header class="chapter-head"><span class="chapter-num">Chapter 4</span><h2 class="chapter-title">Collections</h2><p>Arrays, slices, maps</p></header>
     <section class="note" id="arrays">
       <span class="tag">collections</span>
       <span class="src src-notes">personal notes</span>
@@ -643,8 +1105,8 @@ wages := map[string]float32{
     </section>
     </div>
 
-    <div class="chapter" id="ch-control" data-title="Control flow" data-num="4">
-      <header class="chapter-head"><span class="chapter-num">Chapter 4</span><h2 class="chapter-title">Control flow</h2><p>if, for, for-range, switch</p></header>
+    <div class="chapter" id="ch-control" data-title="Control flow" data-num="5">
+      <header class="chapter-head"><span class="chapter-num">Chapter 5</span><h2 class="chapter-title">Control flow</h2><p>if, for, for-range, switch</p></header>
     <section class="note" id="if">
       <span class="tag">control flow</span>
       <span class="src src-notes">personal notes</span>
@@ -785,8 +1247,8 @@ default:
     </section>
     </div>
 
-    <div class="chapter" id="ch-functions" data-title="Functions and errors" data-num="5">
-      <header class="chapter-head"><span class="chapter-num">Chapter 5</span><h2 class="chapter-title">Functions and errors</h2><p>Functions, closures, defer, errors</p></header>
+    <div class="chapter" id="ch-functions" data-title="Functions and errors" data-num="6">
+      <header class="chapter-head"><span class="chapter-num">Chapter 6</span><h2 class="chapter-title">Functions and errors</h2><p>Functions, closures, defer, errors</p></header>
     <section class="note" id="functions">
       <span class="tag">functions</span>
       <span class="src src-notes">personal notes</span>
@@ -994,8 +1456,8 @@ defer resp.Body.Close()</code></pre>
     </section>
     </div>
 
-    <div class="chapter" id="ch-io" data-title="Input and output" data-num="6">
-      <header class="chapter-head"><span class="chapter-num">Chapter 6</span><h2 class="chapter-title">Input and output</h2><p>Console, files, cleaning strings</p></header>
+    <div class="chapter" id="ch-io" data-title="Input and output" data-num="7">
+      <header class="chapter-head"><span class="chapter-num">Chapter 7</span><h2 class="chapter-title">Input and output</h2><p>Console, files, cleaning strings</p></header>
     <section class="note" id="console">
       <span class="tag">io</span>
       <span class="src src-notes">personal notes</span>
@@ -1069,8 +1531,8 @@ func cleanString(s string) string {
     </section>
     </div>
 
-    <div class="chapter" id="ch-pointers" data-title="Modules, pointers, methods" data-num="7">
-      <header class="chapter-head"><span class="chapter-num">Chapter 7</span><h2 class="chapter-title">Modules, pointers, methods</h2><p>Part 3 slides, Learning Go ch. 6</p></header>
+    <div class="chapter" id="ch-pointers" data-title="Modules, pointers, methods" data-num="8">
+      <header class="chapter-head"><span class="chapter-num">Chapter 8</span><h2 class="chapter-title">Modules, pointers, methods</h2><p>Part 3 slides, Learning Go ch. 6</p></header>
 <section class="note" id="part3-admin">
   <span class="tag">admin</span>
   <span class="src src-slides">slideshow</span>
@@ -1361,8 +1823,8 @@ w, h := badGuy.GetSize()  // 0 0</code></pre>
 </section>
     </div>
 
-    <div class="chapter" id="ch-interfaces" data-title="Interfaces" data-num="8">
-      <header class="chapter-head"><span class="chapter-num">Chapter 8</span><h2 class="chapter-title">Interfaces</h2><p>Part 3 slides, Learning Go ch. 7</p></header>
+    <div class="chapter" id="ch-interfaces" data-title="Interfaces" data-num="9">
+      <header class="chapter-head"><span class="chapter-num">Chapter 9</span><h2 class="chapter-title">Interfaces</h2><p>Part 3 slides, Learning Go ch. 7</p></header>
 <section class="note" id="interfaces">
   <span class="tag">interfaces</span>
   <span class="src src-slides">slideshow</span>
@@ -1556,8 +2018,550 @@ fmt.Println(a == b)  // false, different concrete types</code></pre>
 </section>
     </div>
 
-    <div class="chapter" id="ch-projects" data-title="Projects and examples" data-num="9">
-      <header class="chapter-head"><span class="chapter-num">Chapter 9</span><h2 class="chapter-title">Projects and examples</h2><p>In-class work and Project 1</p></header>
+    <div class="chapter" id="ch-data" data-title="Data from the web" data-num="10">
+      <header class="chapter-head"><span class="chapter-num">Chapter 10</span><h2 class="chapter-title">Data from the web</h2><p>Part 4 slides, Learning Go ch. 13</p></header>
+<section class="note" id="part4-admin">
+  <span class="tag">admin</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Part 4 at a glance</h2>
+  <p>
+    The "Next Steps" slideshow is about building something useful, and
+    that means getting real data into a program. It covers REST APIs,
+    JSON, the <code>net/http</code> package, and where LLMs fit in.
+  </p>
+  <ul>
+    <li>Reading: chapter 13 of <em>Learning Go</em>, especially from <code>encoding/json</code> (page 327) up to Structured logging (page 344).</li>
+    <li>The deck's title also mentions GUIs, but there are no GUI slides in this set yet.</li>
+  </ul>
+</section>
+<section class="note" id="data-sources">
+  <span class="tag">web data</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Where an application's data comes from</h2>
+  <p>
+    By now we know enough Go basics. What a useful application needs on
+    top of that is <strong>data, or input</strong>. Common sources:
+  </p>
+  <ul>
+    <li><strong>The user:</strong> console input, like Project 1.</li>
+    <li><strong>Files:</strong> text files, Excel files.</li>
+    <li><strong>The internet:</strong> REST APIs, remote procedure calls (RPC), and others.</li>
+    <li><strong>Databases:</strong> Postgres, SQLite, MariaDB.</li>
+  </ul>
+  <p>Other approaches come later. For now, the data comes from REST APIs.</p>
+</section>
+<section class="note" id="rest-apis">
+  <span class="tag">web data</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>REST APIs</h2>
+  <p>
+    A REST API is a way for an application to ask a website for data
+    directly. The answer is usually JSON, sometimes XML. It replaces
+    <strong>scraping</strong>, which means downloading the human-facing
+    web page and digging the data out of its HTML.
+  </p>
+  <p>
+    You make a request to a URL, and the query parameters say what you
+    want. This is the class example, which needs no API key as long as
+    you don't send too many requests per second:
+  </p>
+  <pre><code>https://openlibrary.org/search.json?author=zeihan
+        └── server ───┘└ endpoint ─┘└ query ─────┘</code></pre>
+  <p>
+    <span class="src src-external">external</span> REST requests use
+    the same HTTP methods as the web: <code>GET</code> to read,
+    <code>POST</code> to create, <code>PUT</code>/<code>PATCH</code> to
+    update, <code>DELETE</code> to remove. Everything in this unit is a
+    <code>GET</code>.
+  </p>
+</section>
+<section class="note" id="json">
+  <span class="tag">json</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>What JSON is</h2>
+  <p>
+    JSON is a text format for sending data. It's built from
+    <strong>JSON objects</strong> (key/value pairs inside
+    <code>{ }</code>) and <strong>lists</strong> of them (inside
+    <code>[ ]</code>).
+  </p>
+  <p>
+    A JSON object looks like a Python dictionary, and also like a Java
+    record class. Go's approach is <strong>closer to Java's</strong>:
+    you define a struct with typed fields that match the JSON, rather
+    than reading it into a loose dictionary.
+  </p>
+  <p>Sample from the Open Library lists API (trimmed):</p>
+  <pre><code>{
+  "links": {
+    "self": "/people/george08/lists.json",
+    "next": "/people/george08/lists.json?limit=5&amp;offset=5"
+  },
+  "size": 12,
+  "entries": [
+    {
+      "url": "/people/george08/lists/OL13L",
+      "name": "Various Seeds for Testing",
+      "last_update": "2010-12-21T00:46:17.712513",
+      "seed_count": 13,
+      "edition_count": 13181
+    },
+    {
+      "url": "/people/george08/lists/OL97L",
+      "name": "Time Travel",
+      "seed_count": 5,
+      "edition_count": 838
+    }
+  ]
+}</code></pre>
+  <p>
+    Reading the shape: the top level is an object. <code>links</code> is
+    a nested object, <code>size</code> is a number, and
+    <code>entries</code> is a list of objects that all have the same
+    fields.
+  </p>
+</section>
+<section class="note" id="json-structs">
+  <span class="tag">json</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Go structs for JSON objects</h2>
+  <p>
+    Before decoding, create the structs that match the JSON. Each JSON
+    object becomes a struct, each list becomes a slice, and nested
+    objects become nested structs. For the sample above:
+  </p>
+  <pre><code>type ListsResponse struct {
+    Links   Links   `json:"links"`
+    Size    int     `json:"size"`
+    Entries []Entry `json:"entries"`
+}
+
+type Links struct {
+    Self string `json:"self"`
+    Next string `json:"next"`
+}
+
+type Entry struct {
+    URL          string `json:"url"`
+    Name         string `json:"name"`
+    LastUpdate   string `json:"last_update"`
+    SeedCount    int    `json:"seed_count"`
+    EditionCount int    `json:"edition_count"`
+}</code></pre>
+  <h3><span class="src src-external">external</span> Struct tags</h3>
+  <p>
+    The backtick text after each field is a <strong>struct tag</strong>.
+    It tells <code>encoding/json</code> which JSON key goes with the
+    field, which matters because JSON uses names like
+    <code>seed_count</code> and Go fields are capitalized.
+  </p>
+  <ul>
+    <li><code>`json:"seed_count"`</code>: use this key name.</li>
+    <li><code>`json:"next,omitempty"`</code>: when encoding, leave the key out if the value is zero.</li>
+    <li><code>`json:"-"`</code>: ignore this field completely.</li>
+    <li>With no tag, Go matches the field name to the key, ignoring case. <code>Title</code> matches <code>"title"</code> or <code>"TITLE"</code>.</li>
+  </ul>
+  <h3>Let the LLM write them, but check the sample</h3>
+  <p>
+    Generating these structs is a small, self-contained, well-known
+    problem, which is exactly what LLMs are good at. Paste a real
+    response in and ask for the Go structs. The big caveat: some APIs
+    have <strong>optional fields</strong> that show up in some records
+    but not others. The sample you paste has to include records with
+    every field, or the generated structs will be missing some.
+  </p>
+</section>
+<section class="note" id="json-decode">
+  <span class="tag">json</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>encoding/json: NewDecoder and Decode</h2>
+  <p>
+    "Painless JSON" is optimistic, but it's far less painful than it
+    was two years ago. Once the structs exist, decoding takes one line:
+  </p>
+  <pre><code>var jsonResponse OpenLibrarySearchResponse
+err := json.NewDecoder(response.Body).Decode(&amp;jsonResponse)</code></pre>
+  <ul>
+    <li><code>json.NewDecoder(r)</code> wraps anything you can read from (an <code>io.Reader</code>), such as a response body or an open file.</li>
+    <li><code>.Decode(&amp;v)</code> reads one JSON value and fills in <code>v</code>.</li>
+    <li>Pass a <strong>pointer</strong> (<code>&amp;jsonResponse</code>). Pass-by-value again: Decode needs to change your variable, not a copy of it.</li>
+  </ul>
+  <h3>Struct visibility and the decoder</h3>
+  <p>
+    The decoder lives in a different package (<code>encoding/json</code>),
+    so it can only see <strong>exported</strong> (capitalized) fields.
+    A lowercase field is skipped silently, with no error. It just stays
+    at its zero value:
+  </p>
+  <pre><code>type Book struct {
+    title string `json:"title"`              // unexported: decoder can't set it
+    Year  int    `json:"first_publish_year"` // exported: works
+}
+
+// decoding {"title":"Hi","first_publish_year":1999} gives
+// {title: Year:1999}   &lt;- title is empty, and err is nil</code></pre>
+  <p>
+    Verified by running it. The compiler doesn't catch this, but
+    <code>go vet</code> does: <code>struct field title has json tag but
+    is not exported</code>. It's the same capitalization rule from the
+    Structs note, with real consequences.
+  </p>
+  <h3>Missing and mismatched fields</h3>
+  <ul>
+    <li>A key in your struct that's missing from the JSON: the field stays zero, no error. (This is how optional fields show up.)</li>
+    <li>A key in the JSON that isn't in your struct: ignored, no error.</li>
+    <li>A key with the wrong type (<code>"n": "five"</code> into an <code>int</code>): error, <code>cannot unmarshal string into Go struct field ... of type int</code>.</li>
+    <li>Cut-off JSON: error, <code>unexpected end of JSON input</code> (or <code>unexpected EOF</code> from a decoder).</li>
+    <li>A completely empty body: Decode returns <code>io.EOF</code>, which is why the class code treats EOF specially.</li>
+  </ul>
+  <p>
+    <span class="src src-external">external</span> When the JSON is
+    already in memory as <code>[]byte</code> instead of a stream, use
+    <code>json.Unmarshal(data, &amp;v)</code>. Going the other way,
+    <code>json.Marshal(v)</code> and <code>json.NewEncoder(w).Encode(v)</code>
+    turn structs into JSON.
+  </p>
+</section>
+<section class="note" id="net-http">
+  <span class="tag">net/http</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>net/http: client, request, Do</h2>
+  <p>
+    Data on the web is fetched over HTTP(S). Go was built in the late
+    2000s, so the standard library has good HTTP support, and it was
+    updated fairly recently. This is the newer (2020s) way. Many LLMs
+    still suggest the older 2010s style.
+  </p>
+  <h3>The three pieces</h3>
+  <ul>
+    <li><strong><code>http.Client</code></strong> (struct): connects to the server. For now, leave everything at its zero value except <code>Timeout</code>.</li>
+    <li><strong><code>http.NewRequestWithContext</code></strong>: builds the request struct.</li>
+    <li><strong><code>apiClient.Do(request)</code></strong>: sends the request and returns a response and an error.</li>
+  </ul>
+  <pre><code>apiClient := &amp;http.Client{
+    Timeout: 30 * time.Second, // give up instead of hanging forever
+}
+
+request, err := http.NewRequestWithContext(
+    context.Background(), // context: lets a request be cancelled; Background() means "no limit"
+    http.MethodGet,       // the HTTP method, a constant for "GET"
+    fullAddress,          // the URL
+    nil,                  // request body; GET has none
+)
+if err != nil {
+    return nil, err
+}
+
+response, err := apiClient.Do(request)
+if err != nil {
+    return nil, err
+}
+defer response.Body.Close()</code></pre>
+  <h3>Old way vs. new way</h3>
+  <pre><code>resp, err := http.Get(url) // 2010s: shared default client with NO timeout</code></pre>
+  <p>
+    <code>http.Get</code> still works, and it's what the Functions and
+    Errors notes show. <span class="src src-external">external</span>
+    The problem is that the default client never times out, so a slow
+    server can hang your program forever. The newer way sets a timeout
+    on the client and passes a context so requests can be cancelled.
+  </p>
+</section>
+<section class="note" id="http-response">
+  <span class="tag">net/http</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Parts of a response</h2>
+  <p>
+    <code>Do</code> returns a <code>*http.Response</code> struct (defined
+    in <code>net/http/response.go</code>). Mostly we care about two
+    fields:
+  </p>
+  <ul>
+    <li><strong><code>StatusCode</code></strong> (<code>int</code>): 200 means OK. Compare it with constants like <code>http.StatusOK</code>.</li>
+    <li><strong><code>Body</code></strong> (<code>io.ReadCloser</code>): the content, streamed. You read it (here, with a JSON decoder) and <strong>must close it</strong>.</li>
+  </ul>
+  <p><span class="src src-external">external</span> Other fields worth recognizing:</p>
+  <ul>
+    <li><code>Status</code>: text form, like <code>"404 Not Found"</code>.</li>
+    <li><code>Header</code>: response headers, like <code>Content-Type</code>.</li>
+    <li><code>ContentLength</code>: body size in bytes, or -1 if unknown.</li>
+    <li><code>Request</code>: the request that produced this response.</li>
+  </ul>
+  <pre><code>200 OK              success
+301 / 302           redirect (Client follows these for you)
+400 Bad Request     your request was malformed
+401 / 403           not authorized / forbidden
+404 Not Found       nothing at that URL
+429 Too Many Req.   rate limited (too many requests per second)
+500 / 503           the server broke / is unavailable</code></pre>
+</section>
+<section class="note" id="http-errors">
+  <span class="tag">net/http</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Kinds of errors to deal with</h2>
+  <p>
+    Opening a file, reading a file, connecting to the internet, and
+    getting data from that connection all share one thing: they can fail
+    for reasons that <strong>aren't programming errors</strong>. Python
+    and Java handle these with <strong>exceptions</strong>. Go doesn't
+    use exceptions. These are errors that have to be handled.
+  </p>
+  <p>Each step of a web request fails differently. All of these were produced by running the class code against a test server:</p>
+  <pre><code>Step                    What goes wrong                 What you see
+----------------------  ------------------------------  ---------------------------------------------
+NewRequestWithContext   malformed URL                   parse "http://bad host/...": invalid character " " in host name
+client.Do               server down / no network        dial tcp ...: connect: connection refused
+client.Do               too slow                        ... (Client.Timeout exceeded ...)
+StatusCode check        server answered with an error   unexpected status code: 404   (you build this one)
+Decode                  JSON doesn't match the structs  json: cannot unmarshal string into ... of type []main.Book
+Decode                  empty body                      EOF</code></pre>
+  <p>
+    The key trap: <strong>a 404 or 500 is not an error from
+    <code>Do</code></strong>. As far as <code>Do</code> is concerned, the
+    server answered, so <code>err</code> is <code>nil</code>. You have to
+    check <code>StatusCode</code> yourself.
+  </p>
+</section>
+<section class="note" id="getbookdata">
+  <span class="tag">example</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Class example: getBookData</h2>
+  <p>
+    The whole flow in one function: build a client, build a request,
+    send it, check the status, decode the JSON, return the books. The
+    instructor's LLM named the two structs
+    <code>OpenLibrarySearchResponse</code> and <code>Book</code>. The
+    slides don't show their fields, so the versions here are mine,
+    matching the Open Library search response.
+  </p>
+  <div class="code-tabs">
+    <div class="code-tab-buttons">
+      <button class="code-tab-btn active" data-tab="gbd-slide">from the slide</button>
+      <button class="code-tab-btn" data-tab="gbd-structs">structs</button>
+      <button class="code-tab-btn" data-tab="gbd-fixed">cleaned up</button>
+    </div>
+    <div class="code-tab-panel active" data-panel="gbd-slide">
+<pre><code>const ServerAddress = "https://openlibrary.org/search.json?author="
+
+func getBookData(author string) ([]Book, error) {
+    var result []Book
+    apiClient := &amp;http.Client{
+        Timeout: 30 * time.Second,
+    }
+    fullAddress := fmt.Sprintf("%s%s", ServerAddress, author)
+    request, err := http.NewRequestWithContext(
+        context.Background(),
+        http.MethodGet, fullAddress, nil)
+    if err != nil {
+        return nil, err
+    }
+    response, err := apiClient.Do(request)
+    if err != nil {
+        return nil, err
+    }
+    if response.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("unexpected status code: %d",
+            response.StatusCode)
+    }
+    defer response.Body.Close()
+
+    var jsonResponse = OpenLibrarySearchResponse{}
+    err = json.NewDecoder(response.Body).Decode(&amp;jsonResponse)
+    if err != nil &amp;&amp; err != io.EOF {
+        print("Error the actual response body was: ",
+            response.Body, err)
+        return nil, err
+    }
+    result = jsonResponse.Docs
+    return result, nil
+}</code></pre>
+    </div>
+    <div class="code-tab-panel" data-panel="gbd-structs">
+<pre><code>// my version, not from the slides
+type OpenLibrarySearchResponse struct {
+    NumFound int    `json:"numFound"`
+    Docs     []Book `json:"docs"`
+}
+
+type Book struct {
+    Title            string   `json:"title"`
+    AuthorName       []string `json:"author_name"`
+    FirstPublishYear int      `json:"first_publish_year"`
+    EditionCount     int      `json:"edition_count"`
+}
+
+// imports for getBookData:
+import (
+    "context"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+    "time"
+)</code></pre>
+    </div>
+    <div class="code-tab-panel" data-panel="gbd-fixed">
+<pre><code>func getBookData(author string) ([]Book, error) {
+    apiClient := &amp;http.Client{Timeout: 30 * time.Second}
+    fullAddress := ServerAddress + url.QueryEscape(author)
+
+    request, err := http.NewRequestWithContext(
+        context.Background(), http.MethodGet, fullAddress, nil)
+    if err != nil {
+        return nil, err
+    }
+    response, err := apiClient.Do(request)
+    if err != nil {
+        return nil, err
+    }
+    defer response.Body.Close() // right after the error check, before any other return
+
+    if response.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("unexpected status code: %d", response.StatusCode)
+    }
+
+    var jsonResponse OpenLibrarySearchResponse
+    err = json.NewDecoder(response.Body).Decode(&amp;jsonResponse)
+    if err != nil &amp;&amp; err != io.EOF {
+        return nil, fmt.Errorf("decoding response: %w", err)
+    }
+    return jsonResponse.Docs, nil
+}</code></pre>
+    </div>
+  </div>
+  <h3>Questions worth asking about it</h3>
+  <ul>
+    <li><strong>Why <code>&amp;http.Client{...}</code>?</strong> <code>Do</code> has a pointer receiver, and there's no reason to copy the client.</li>
+    <li><strong>Why <code>([]Book, error)</code>?</strong> The error goes last. Every failure returns <code>nil, err</code>, and success returns <code>result, nil</code>.</li>
+    <li><strong>Why accept <code>io.EOF</code>?</strong> An empty body isn't treated as a failure. The function returns an empty (<code>nil</code>) slice and no error.</li>
+    <li><strong>Where's the defer?</strong> On the slide it comes after the status check. If the status isn't 200, the function returns before the <code>defer</code> line runs, so that body is never closed. Moving the <code>defer</code> right after <code>Do</code>'s error check closes it on every path.</li>
+    <li><strong>The debug <code>print</code>:</strong> <code>response.Body</code> is a reader, not text, and the decoder already consumed it. Running it prints pointer addresses like <code>(0x7e77e0,0xc00011caa0)</code>, not the body.</li>
+    <li><span class="src src-external">external</span> <strong>Spaces in names:</strong> an author like "peter zeihan" puts a space in the URL. <code>url.QueryEscape</code> encodes it safely as <code>peter+zeihan</code>.</li>
+  </ul>
+  <p>
+    Verified against a local test server serving fake Open Library
+    JSON. The real site isn't reachable from where I ran it, and missing
+    fields came back as zero, like <code>EditionCount 0</code>.
+  </p>
+</section>
+<section class="note" id="inclass-exercise">
+  <span class="tag">example</span>
+  <span class="src src-project">in-class assignment</span>
+  <h2>In-class exercise: main for getBookData</h2>
+  <p>The task: ask the user for an author, call <code>getBookData</code> with it, report any error, otherwise print each book struct on its own line.</p>
+  <pre><code>func main() {
+    reader := bufio.NewReader(os.Stdin)
+    fmt.Print("Enter an author: ")
+    author, err := reader.ReadString('\n')
+    if err != nil {
+        fmt.Println("Could not read input:", err)
+        return
+    }
+    author = strings.TrimSpace(author)
+
+    books, err := getBookData(author)
+    if err != nil {
+        fmt.Println("Error getting book data:", err)
+        return
+    }
+    for _, book := range books {
+        fmt.Println(book)
+    }
+}</code></pre>
+  <pre><code>Enter an author: zeihan
+{The Accidental Superpower [Peter Zeihan] 2014 9}
+{The End of the World Is Just the Beginning [Peter Zeihan] 2022 0}</code></pre>
+  <p>
+    (Test-server output. Real Open Library results will have more books
+    and more fields.) Printing a struct with <code>fmt.Println</code>
+    shows values only. Use <code>fmt.Printf("%+v\n", book)</code> to
+    include the field names.
+  </p>
+  <p>
+    A side lesson from testing: calling a function that creates a
+    <em>second</em> <code>bufio.NewReader(os.Stdin)</code> got
+    <code>EOF</code>, because the first reader had already buffered
+    all the input. That's why Project 1 passes one reader around.
+  </p>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-industry" data-title="CS in industry" data-num="11">
+      <header class="chapter-head"><span class="chapter-num">Chapter 11</span><h2 class="chapter-title">CS in industry</h2><p>LLMs, jobs, podcast, PIPs</p></header>
+<section class="note" id="llm-discussion">
+  <span class="tag">industry</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>LLMs: what they can and can't do</h2>
+  <p>LLMs (large language models) are the current hotness in AI. The class discussion:</p>
+  <h3>Good at</h3>
+  <ul>
+    <li>Helping someone who is really bad at a task look somewhat competent. (The instructor isn't good at creating images, so AI lets him manage.)</li>
+    <li>The small projects done in academia, even when they feel large to students.</li>
+    <li>Limited-scope, self-contained, well-known problems, like turning a JSON sample into Go structs. For that task, it almost always gets it right.</li>
+  </ul>
+  <h3>Bad at</h3>
+  <ul>
+    <li>Building something that has to work within a larger context.</li>
+    <li>Anything that needs specialized knowledge.</li>
+    <li>Staying current: many still suggest the 2010s <code>http.Get</code> style instead of <code>NewRequestWithContext</code>.</li>
+  </ul>
+  <p>
+    Normally you'd double-check LLM-generated code if you want
+    maintainable software, despite what AI company marketing says. The
+    JSON struct case is the exception, as long as the sample includes
+    every optional field.
+  </p>
+  <p>
+    <span class="src src-external">external</span> What an LLM is: a
+    model trained on huge amounts of text to predict the next token
+    (roughly, a word piece). That explains the pattern above. Common,
+    well-documented problems are heavily represented in the training
+    data. Your large codebase and niche domain knowledge aren't, and the
+    training data has a cutoff date, which is why advice can be outdated.
+  </p>
+</section>
+<section class="note" id="industry">
+  <span class="tag">industry</span>
+  <span class="src src-slides">slideshow</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>CS in the larger industry: jobs, podcast, PIPs</h2>
+  <h3>Jobs discussion</h3>
+  <p>
+    The class talked about the current tech jobs situation, including a
+    Medium article on engineering interview practices in the age of AI.
+  </p>
+  <h3>The podcast</h3>
+  <p>
+    Episode 78 (Aug 22, 2026) of <em>The Programming Podcast</em>, focused
+    on helping you get the job. The hosts discussed a pair of studies of
+    hiring managers that listed behaviors that disqualify applicants.
+    Two from the studies:
+  </p>
+  <ul>
+    <li><strong>Not researching the company</strong> before the interview.</li>
+    <li><strong>Showing up late.</strong></li>
+  </ul>
+  <p>
+    Quiz 3 also asked which one more hiring managers found disqualifying.
+    That isn't recorded on the graded quiz, so check the episode or ask.
+    Rehearsed answers and not explaining your thought process came up in
+    the class discussion, not in the podcast studies.
+  </p>
+  <h3>PIP (performance improvement plan)</h3>
+  <ul>
+    <li><strong>What it's supposed to do:</strong> give an underperforming employee a chance to keep their job by hitting measurable benchmarks. It's meant to retain current employees and avoid the expense of firing and rehiring.</li>
+    <li><strong>What companies often use it for:</strong> a formal path to getting rid of employees who generate less value than their salaries, often with a paper trail already in place.</li>
+  </ul>
+  <h3>News page</h3>
+  <p>
+    The study guide lists the class news page as a topic. Nothing from it
+    is in these notes yet, so it's worth skimming before the exam.
+  </p>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-projects" data-title="Projects and examples" data-num="12">
+      <header class="chapter-head"><span class="chapter-num">Chapter 12</span><h2 class="chapter-title">Projects and examples</h2><p>In-class work and Project 1</p></header>
     <section class="note" id="first-project">
       <span class="tag">example</span>
       <span class="src src-inclass">in-class assignment</span>
@@ -1908,8 +2912,8 @@ Quitting Program!</code></pre>
 </section>
     </div>
 
-    <div class="chapter" id="ch-quiz" data-title="Quiz 2 review" data-num="10">
-      <header class="chapter-head"><span class="chapter-num">Chapter 10</span><h2 class="chapter-title">Quiz 2 review</h2><p>Corrected answers, 22/30</p></header>
+    <div class="chapter" id="ch-quiz" data-title="Quiz reviews" data-num="13">
+      <header class="chapter-head"><span class="chapter-num">Chapter 13</span><h2 class="chapter-title">Quiz reviews</h2><p>Quiz 2 (22/30) and Quiz 3 (21/30), corrected</p></header>
 <section class="note" id="quiz2-overview">
   <span class="tag">quiz</span>
   <span class="src src-quiz">quiz</span>
@@ -2047,16 +3051,112 @@ func (account bankAccount) updateName(newName string) {   // immutable
   </p>
   <p>See the traced example in <a href="#receivers">Pointer receivers vs. value receivers</a>.</p>
 </section>
+<section class="note" id="quiz3-overview">
+  <span class="tag">quiz</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Quiz 3 review: overview (21/30)</h2>
+  <p>
+    Comp415 Go Quiz 3 had two industry questions and one interface
+    question:
+  </p>
+  <pre><code>Q1  hiring disqualifiers (podcast)    answer: not researching the company, showing up late
+Q2  make HourlyEmployee a paidEmployee   5/10, concept right, method written in the wrong place
+Q3  what a PIP is and is used for</code></pre>
+</section>
+<section class="note" id="quiz3-q1">
+  <span class="tag">quiz</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Quiz 3, Q1: disqualifying behaviors</h2>
+  <p>
+    <strong>Question:</strong> the podcast hosts discussed a pair of
+    studies of hiring managers that showed several things that would
+    disqualify applicants. Give two, and say which one more hiring
+    managers thought was disqualifying.
+  </p>
+  <p>
+    <strong>Answer given:</strong> giving cookie-cutter, rehearsed
+    answers, and not explaining your thought process while programming.
+    The grader's note: most of these are from the class discussion, not
+    the podcast.
+  </p>
+  <p>
+    <strong>Expected answer:</strong> <strong>not researching the
+    company</strong> and <strong>showing up late</strong>.
+  </p>
+  <p>
+    Lesson for the midterm: when a question names a source ("the
+    podcast"), the answer has to come from that source, even if a
+    different answer is also true.
+  </p>
+</section>
+<section class="note" id="quiz3-q2">
+  <span class="tag">quiz</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Quiz 3, Q2: make HourlyEmployee a paidEmployee</h2>
+  <pre><code>package main
+
+type HourlyEmployee struct {
+    name          string
+    hourlyrate    float64
+    NumberOfHours float64
+}
+
+type paidEmployee interface {
+    calculatePay() float64
+}</code></pre>
+  <h3>What was written</h3>
+  <p>
+    <code>calculatePay() float64</code> was added <em>inside</em> the
+    struct, with the note that every <code>paidEmployee</code> needs a
+    <code>calculatePay()</code> method to compile. The concept is right:
+    implementing the method is what makes the type satisfy the
+    interface. But a Go struct holds only fields, so that line doesn't
+    even parse:
+  </p>
+  <pre><code>syntax error: unexpected ), expected type</code></pre>
+  <h3>Correct answer (from the whiteboard)</h3>
+  <pre><code>func (emp HourlyEmployee) calculatePay() float64 {
+    return emp.hourlyrate * emp.NumberOfHours
+}</code></pre>
+  <ul>
+    <li>The method goes <strong>outside</strong> the struct, with a receiver.</li>
+    <li>The name, parameters (none), and return type (<code>float64</code>) must match the interface exactly.</li>
+    <li>Both fields need the receiver: <code>emp.hourlyrate</code> and <code>emp.NumberOfHours</code>. On the board, the second <code>emp.</code> was squeezed in afterward. Leaving it off is a compile error.</li>
+    <li>A value receiver is fine because it only reads. Because of that, both <code>HourlyEmployee</code> and <code>*HourlyEmployee</code> satisfy the interface. Compare Quiz 2, Q1, where pointer receivers meant only <code>*bankAccount</code> could.</li>
+  </ul>
+  <pre><code>var p paidEmployee = HourlyEmployee{"Chris", 20, 10}
+var q paidEmployee = &amp;HourlyEmployee{"Ann", 15, 4}
+fmt.Println(p.calculatePay(), q.calculatePay()) // 200 60</code></pre>
+  <p>Verified by running it.</p>
+</section>
+<section class="note" id="quiz3-q3">
+  <span class="tag">quiz</span>
+  <span class="src src-quiz">quiz</span>
+  <h2>Quiz 3, Q3: what is a PIP?</h2>
+  <p>
+    <strong>Question:</strong> what is a PIP (performance improvement
+    plan), both what it's supposed to do and what companies usually use
+    it for?
+  </p>
+  <p><strong>Answer given</strong> (covers both halves):</p>
+  <p>
+    It's designed to give a means to fire an underperforming employee
+    while giving that employee a chance to keep their job by hitting
+    measurable benchmarks. It's supposed to be used to retain current
+    employees and prevent expensive firing costs, but it's often used to
+    get rid of employees who generate less value than their salaries.
+  </p>
+</section>
     </div>
 
-    <div class="chapter" id="ch-practice" data-title="Practice questions" data-num="11">
-      <header class="chapter-head"><span class="chapter-num">Chapter 11</span><h2 class="chapter-title">Practice questions</h2><p>Eighteen traced questions with answers</p></header>
+    <div class="chapter" id="ch-practice" data-title="Practice questions" data-num="14">
+      <header class="chapter-head"><span class="chapter-num">Chapter 14</span><h2 class="chapter-title">Practice questions</h2><p>Twenty-one traced questions with answers</p></header>
     <section class="note" id="practice-intro">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
       <h2>Practice questions: how to use these</h2>
       <p>
-        Eighteen practice questions (1 to 13 from earlier units, 14 to 18 on pointers, methods, and interfaces) with answers, written to match the
+        Twenty-one practice questions (1 to 13 from earlier units, 14 to 18 on pointers, methods, and interfaces, 19 to 21 on JSON, HTTP errors, and interfaces) with answers, written to match the
         kinds of questions on the quiz: trace what code prints, fix code
         so it compiles, and explain how you would solve something. Each
         one lists the notes that help and then the full answer.
@@ -2811,10 +3911,126 @@ func main() {
     fmt.Println(w.cents) // 500
 }</code></pre>
 </section>
+<section class="note" id="practice-19">
+  <span class="tag">practice</span>
+  <span class="src src-practice">practice question</span>
+  <h2>Practice 19: what does this print? (JSON and visibility)</h2>
+  <pre><code>type Book struct {
+    Title string `json:"title"`
+    pages int    `json:"pages"`
+    Year  int
+}
+
+func main() {
+    data := `{"title": "Dune", "pages": 412, "year": 1965, "isbn": "x"}`
+    var b Book
+    err := json.NewDecoder(strings.NewReader(data)).Decode(&amp;b)
+    fmt.Printf("%+v %v\n", b, err)
+}</code></pre>
+  <h3>Notes that help</h3>
+  <ul>
+    <li>The decoder can only set exported fields.</li>
+    <li>With no tag, field names match keys ignoring case.</li>
+    <li>Extra JSON keys are ignored.</li>
+  </ul>
+  <h3>Answer</h3>
+  <pre><code>{Title:Dune pages:0 Year:1965} &lt;nil&gt;</code></pre>
+  <p>
+    <code>pages</code> is unexported, so it's skipped silently and stays
+    0. <code>Year</code> has no tag but matches <code>"year"</code>.
+    <code>"isbn"</code> has no field, so it's dropped. None of this is an
+    error.
+  </p>
+</section>
+<section class="note" id="practice-20">
+  <span class="tag">practice</span>
+  <span class="src src-practice">practice question</span>
+  <h2>Practice 20: fix the code (HTTP errors)</h2>
+  <pre><code>func fetch(url string) ([]Book, error) {
+    client := &amp;http.Client{}
+    req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
+    resp, err := client.Do(req)
+    defer resp.Body.Close()
+    if err != nil {
+        return nil, err
+    }
+    var r OpenLibrarySearchResponse
+    json.NewDecoder(resp.Body).Decode(r)
+    return r.Docs, nil
+}</code></pre>
+  <h3>Notes that help</h3>
+  <ul>
+    <li>When <code>Do</code> fails, <code>resp</code> is nil.</li>
+    <li>A 404 is not an error from <code>Do</code>.</li>
+    <li>Decode has to change your variable.</li>
+  </ul>
+  <h3>Answer: five problems</h3>
+  <ol>
+    <li>The <code>NewRequestWithContext</code> error is thrown away with <code>_</code>. A bad URL leaves <code>req</code> nil.</li>
+    <li><code>defer resp.Body.Close()</code> runs before the error check. If <code>Do</code> failed, <code>resp</code> is nil and this panics.</li>
+    <li>No <code>StatusCode</code> check, so a 404 or 500 page gets decoded as if it were data.</li>
+    <li><code>Decode(r)</code> passes a copy. It needs <code>&amp;r</code>. (Decode actually returns an error for a non-pointer, which is also being ignored.)</li>
+    <li>The client has no <code>Timeout</code>.</li>
+  </ol>
+  <pre><code>func fetch(url string) ([]Book, error) {
+    client := &amp;http.Client{Timeout: 30 * time.Second}
+    req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
+    if err != nil {
+        return nil, err
+    }
+    resp, err := client.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+    if resp.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+    }
+    var r OpenLibrarySearchResponse
+    if err := json.NewDecoder(resp.Body).Decode(&amp;r); err != nil {
+        return nil, err
+    }
+    return r.Docs, nil
+}</code></pre>
+</section>
+<section class="note" id="practice-21">
+  <span class="tag">practice</span>
+  <span class="src src-practice">practice question</span>
+  <h2>Practice 21: make it satisfy the interface</h2>
+  <p>Add whatever is needed so that a <code>Rectangle</code> is a <code>Shape</code>:</p>
+  <pre><code>type Shape interface {
+    Area() float64
+    Describe() string
+}
+
+type Rectangle struct {
+    Width, Height float64
+}</code></pre>
+  <h3>Notes that help</h3>
+  <ul>
+    <li>Methods go outside the struct, with a receiver.</li>
+    <li>Every interface method is needed, with exact signatures.</li>
+  </ul>
+  <h3>Answer</h3>
+  <pre><code>func (r Rectangle) Area() float64 {
+    return r.Width * r.Height
+}
+
+func (r Rectangle) Describe() string {
+    return fmt.Sprintf("%v x %v rectangle", r.Width, r.Height)
+}
+
+var s Shape = Rectangle{3, 4} // compiles: both methods, value receivers</code></pre>
+  <p>
+    Writing only <code>Area</code> would fail with <code>Rectangle does
+    not implement Shape (missing method Describe)</code>. That's the
+    Quiz 2, Q1 mistake.
+  </p>
+</section>
     <section class="note" id="practice-recap">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
-      <h2>Practice recap: all eighteen lessons in one place</h2>
+      <h2>Practice recap: all twenty-one lessons in one place</h2>
       <ol>
         <li><strong>Loop trace:</strong> <code>sum += sum</code> doubles the value, and the condition is checked before each pass. The loop runs once more at 64 and ends at 128.</li>
         <li><strong>Mixed types:</strong> Go never mixes types. Convert explicitly with <code>float64(y)</code>.</li>
@@ -2834,6 +4050,9 @@ func main() {
         <li><strong>Interface satisfaction:</strong> check every required method, then check receivers. Pointer-receiver methods only count for <code>*T</code>.</li>
         <li><strong>Type assertions:</strong> comma-ok never panics and gives the zero value on failure. The single-value form panics.</li>
         <li><strong>Nil receivers:</strong> calling on nil is legal, touching a field through nil panics. Check nil first.</li>
+        <li><strong>JSON visibility:</strong> the decoder only sets exported fields. Lowercase ones stay zero, with no error.</li>
+        <li><strong>HTTP errors:</strong> check <code>err</code> before using <code>resp</code>, check <code>StatusCode</code> yourself, and pass <code>&amp;v</code> to Decode.</li>
+        <li><strong>Implementing an interface:</strong> methods go outside the struct with a receiver, and every method is needed.</li>
       </ol>
       <p>
         The pattern behind most of the misses: Go hides a copy or a
