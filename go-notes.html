@@ -2031,7 +2031,7 @@ fmt.Println(a == b)  // false, different concrete types</code></pre>
   </p>
   <ul>
     <li>Reading: chapter 13 of <em>Learning Go</em>, especially from <code>encoding/json</code> (page 327) up to Structured logging (page 344).</li>
-    <li>The deck's title also mentions GUIs, but there are no GUI slides in this set yet.</li>
+    <li>The second half of the deck is about building GUIs with Fyne. That's the next chapter (Chapter 11).</li>
   </ul>
 </section>
 <section class="note" id="data-sources">
@@ -2486,8 +2486,1027 @@ import (
 </section>
     </div>
 
-    <div class="chapter" id="ch-industry" data-title="CS in industry" data-num="11">
-      <header class="chapter-head"><span class="chapter-num">Chapter 11</span><h2 class="chapter-title">CS in industry</h2><p>LLMs, jobs, podcast, PIPs</p></header>
+    <div class="chapter" id="ch-gui" data-title="GUIs with Fyne" data-num="11">
+      <header class="chapter-head"><span class="chapter-num">Chapter 11</span><h2 class="chapter-title">GUIs with Fyne</h2><p>Part 4 slides, second half</p></header>
+<section class="note" id="gui-intro">
+  <span class="tag">gui</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>GUIs: where this fits</h2>
+
+  <p>
+    The second half of the Part 4 slideshow moves from getting data to
+    <strong>showing it</strong> in a graphical interface. The tool is
+    <strong>Fyne</strong>, and the example is a GUI over the same Open
+    Library book search from the last chapter.
+  </p>
+  <p>
+    <span class="src src-external">external</span> Heads up on the code in this chapter: I couldn't download Fyne
+    where I tested, so none of the Fyne code here was compiled. It is
+    transcribed from the slides, with the snipped parts filled in and
+    labeled. Try it in GoLand before trusting it.
+  </p>
+</section>
+<section class="note" id="gui-events">
+  <span class="tag">gui</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Threads and events in GUI libraries</h2>
+
+  <p>Most GUI libraries handle threads and events the same way:</p>
+  <ul>
+    <li>The main thread spawns a new thread that runs the GUI. Your own main thread often ends up <strong>vestigial</strong>: Java's <code>main</code> method, or the first method called in Python's <code>if __name__ == '__main__'</code> block.</li>
+    <li>Events are handled by an <strong>event loop</strong> inside the GUI library. You provide <strong>callback functions</strong> in your code, and the library calls them when something happens (a click, a selection).</li>
+  </ul>
+  <p>
+    <span class="src src-external">external</span> Fyne fits this shape. <code>ShowAndRun()</code> shows the window
+    and starts the event loop, and it doesn't return until the window is
+    closed. That's why the book GUI example builds everything first and
+    calls <code>ShowAndRun</code> last.
+  </p>
+</section>
+<section class="note" id="gui-layout-history">
+  <span class="tag">gui</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Look, feel, and layout: then and now</h2>
+
+  <h3>Classical era (about 1980 to 2010)</h3>
+  <ul>
+    <li>Put controls on a window, use some sort of layout to arrange them, and use static properties to paint them the right way.</li>
+    <li>Works best on laptops and desktops, where the window's aspect ratio and size don't change while the program runs.</li>
+  </ul>
+  <h3>Current era (about 2010 to now)</h3>
+  <ul>
+    <li>Use a layout to arrange the components and CSS to make them look nice.</li>
+    <li>Built for mobile and multi-monitor setups, where size and aspect ratio might change.</li>
+  </ul>
+</section>
+<section class="note" id="gui-go-options">
+  <span class="tag">gui</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>GUI choices in Go</h2>
+
+  <p>
+    The awesome-go list (<code>github.com/avelino/awesome-go#gui</code>)
+    has a lot of GUI choices. They fall into three categories:
+  </p>
+  <ul>
+    <li><strong>Wrappers around C/C++ libraries:</strong> wxWidgets, Qt, and similar.</li>
+    <li><strong>Electron wrappers or clones:</strong> Wails, for example.</li>
+    <li><strong>Pure Go implementations:</strong> Fyne, Gio, and others.</li>
+  </ul>
+</section>
+<section class="note" id="fyne-intro">
+  <span class="tag">gui</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Fyne and the hello world</h2>
+
+  <p>The class uses Fyne for GUIs:</p>
+  <ul>
+    <li>It follows <strong>Material Design</strong> (originally a Google standard), built so the same application looks the same on every platform.</li>
+    <li>For the last couple of years it can compile to WebAssembly, so you can deploy a Fyne application to the web (see the WebAssembly chapter).</li>
+    <li>Otherwise it has a classic GUI development feel.</li>
+    <li>Official docs: <code>fyne.io</code>.</li>
+  </ul>
+  <h3>The official hello world</h3>
+  <pre><code>package main
+
+import (
+    "fyne.io/fyne/v2/app"
+    "fyne.io/fyne/v2/widget"
+)
+
+func main() {
+    a := app.New()
+    w := a.NewWindow("Hello")
+
+    w.SetContent(widget.NewButton(
+        "Click me",
+        func() { println("Hello!") },
+    ))
+
+    w.ShowAndRun()
+}</code></pre>
+  <ol>
+    <li>Create a Fyne app.</li>
+    <li>Create one or more windows.</li>
+    <li>Add some widgets to the window.</li>
+    <li>Call one of the run or show functions on the main window.</li>
+  </ol>
+  <p>
+    The button's callback is a function literal, the same function-as-value
+    idea from the functions chapter. <span class="src src-external">external</span> The lowercase <code>println</code>
+    here is Go's built-in, which writes to standard error rather than
+    standard output, so look at the terminal, not a log file.
+  </p>
+</section>
+<section class="note" id="fyne-widgets-layouts">
+  <span class="tag">gui</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Widgets and layouts</h2>
+
+  <h3>Widgets</h3>
+  <p>
+    GUI components are called widgets, controls, or components depending
+    on the library. Fyne's docs split widgets into two groups:
+  </p>
+  <ul>
+    <li><strong>Widgets for one piece of data:</strong> for example a <code>Label</code> (<code>docs.fyne.io/widget/label/</code>).</li>
+    <li><strong>Widgets for aggregate data:</strong> for example a <code>List</code> (<code>docs.fyne.io/collection/list/</code>).</li>
+  </ul>
+  <h3>Layouts</h3>
+  <p>Layouts arrange the components on the window.</p>
+  <ul>
+    <li><strong>BorderLayout:</strong> popular when one thing should be big (center) with smaller things around it.</li>
+    <li><strong>Box layout (vbox or hbox):</strong> a column or a row of components.</li>
+    <li><strong>Grid:</strong> a grid of equally sized components, like a calculator.</li>
+    <li><strong>AppTabs:</strong> tabs along the top (or side) with a large area that holds its own layouts.</li>
+  </ul>
+</section>
+<section class="note" id="fyne-book-gui">
+  <span class="tag">gui</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Class example: the book GUI</h2>
+
+  <p>
+    The class example puts a GUI on <code>getBookData</code>. The user
+    still types an author in the console, then a window opens with the
+    list of titles in the center and a details panel on the
+    right. Selecting a book fills in its details.
+  </p>
+  <div class="code-tabs">
+    <div class="code-tab-buttons">
+      <button class="code-tab-btn active" data-tab="bg-main">main</button>
+      <button class="code-tab-btn" data-tab="bg-build">buildBookGUI</button>
+      <button class="code-tab-btn" data-tab="bg-details">makeDetailsPanel</button>
+      <button class="code-tab-btn" data-tab="bg-selected">bookSelected</button>
+    </div>
+    <div class="code-tab-panel active" data-panel="bg-main">
+<pre><code>// package-wide variables, so the callbacks can reach them
+var (
+    books           []Book
+    authorsDisplay  *widget.Entry
+    languageDisplay *widget.Entry
+    publishDisplay  *widget.Entry
+)
+
+func main() {
+    reader := bufio.NewReader(os.Stdin)
+    fmt.Print("What author would you like to search for? ")
+    author, err := reader.ReadString('\n')
+    if err != nil { // the slide skips this check
+        fmt.Println("Could not read input:", err)
+        return
+    }
+    author = strings.TrimSpace(author)
+
+    data, err := getBookData(author)
+    if err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
+    gui := *buildBookGUI(data)
+    gui.ShowAndRun()
+}</code></pre>
+    </div>
+    <div class="code-tab-panel" data-panel="bg-build">
+<pre><code>func buildBookGUI(bookData []Book) *fyne.Window {
+    guiApp := app.New()
+
+    books = bookData
+    mainWindow := guiApp.NewWindow("Book GUI")
+    directions := widget.NewLabel("Select a book")
+    directions.Alignment = fyne.TextAlignCenter
+    directions.TextStyle = fyne.TextStyle{Bold: true}
+
+    titleList := widget.NewList(
+        func() int { return len(books) },
+        func() fyne.CanvasObject {
+            return widget.NewLabel("Placeholder")
+        },
+        func(i widget.ListItemID, selected fyne.CanvasObject) {
+            selected.(*widget.Label).SetText(books[i].Title)
+        })
+    titleList.OnSelected = bookSelected
+
+    detailsPanel := makeDetailsPanel()
+    mainLayout := container.NewBorder(directions, nil, nil, detailsPanel, titleList)
+
+    mainWindow.SetContent(mainLayout)
+    mainWindow.Resize(fyne.NewSize(800, 800))
+    return &amp;mainWindow
+}</code></pre>
+    </div>
+    <div class="code-tab-panel" data-panel="bg-details">
+<pre><code>func makeDetailsPanel() *fyne.Container {
+    detailsPanel := container.New(layout.NewVBoxLayout())
+
+    // the slide cuts a third of this function. authorsPanel is declared
+    // in the cut part, so this declaration is my guess at it
+    authorsPanel := container.New(layout.NewVBoxLayout())
+    a := widget.NewLabel("Authors displayed below:")
+    authorsPanel.Add(a)
+    authorsDisplay = widget.NewEntry()
+    authorsDisplay.MultiLine = true
+    authorsDisplay.PlaceHolder = "Authors will appear here"
+    authorsDisplay.Resize(fyne.NewSize(200, 100))
+    authorsPanel.Add(authorsDisplay)
+    detailsPanel.Add(authorsPanel)
+
+    // ...languages panel (languageDisplay) and publish year panel
+    // (publishDisplay) follow the same pattern
+
+    return detailsPanel
+}</code></pre>
+    </div>
+    <div class="code-tab-panel" data-panel="bg-selected">
+<pre><code>func bookSelected(i widget.ListItemID) {
+    bookAuthors := books[i].AuthorName // possibly empty list of authors
+    if len(bookAuthors) == 0 {
+        authorsDisplay.SetText("")
+        return
+    }
+    var authorsNames = strings.Builder{}
+    for _, author := range bookAuthors {
+        authorsNames.WriteString(author + "\n")
+    }
+    authorsDisplay.SetText(authorsNames.String())
+
+    pubDate := books[i].FirstPublishYear
+    publishDisplay.SetText(strconv.Itoa(pubDate))
+    // languages work a lot like the authors
+}</code></pre>
+    </div>
+  </div>
+  <p>
+    This is the slide code with the formatting fixed (the slide has the
+    <code>return</code> outside the function, for instance). The slides
+    only show part of <code>makeDetailsPanel</code> and
+    <code>bookSelected</code>, and the full version was shared on
+    GitHub in class.
+  </p>
+  <h3>How the list works</h3>
+  <ul>
+    <li><code>widget.NewList</code> takes <strong>three functions</strong>.</li>
+    <li>The first two are usually always the same: one returns the length of the data, and one creates a label with default text to use as the row template.</li>
+    <li>The third puts the right text into row <code>i</code>.</li>
+    <li>After that you set <code>OnSelected</code> to a function that runs when a row is clicked.</li>
+    <li><code>container.NewBorder</code> takes its parameters in this order: <strong>top, bottom, left, right, center</strong>. The call above puts <code>directions</code> on top, <code>detailsPanel</code> on the right, and the list in the center, with <code>nil</code> for the unused sides.</li>
+  </ul>
+  <h3>Notes on the code</h3>
+  <ul>
+    <li>The instructor points out that <code>AuthorName</code> is a misnomer: it is a possibly empty list of authors, which is why <code>bookSelected</code> checks the length first.</li>
+    <li><span class="src src-external">external</span> The shared state lives in package-wide variables because the callbacks have a fixed signature (<code>OnSelected</code> only receives the row's id), so they can't take extra parameters. They need some other way to reach the data and the display widgets.</li>
+    <li><span class="src src-external">external</span> As written on the slide, the early <code>return</code> for a book with no authors also skips setting the publish year. That is probably an artifact of trimming the slide, but it's worth knowing if you copy it.</li>
+    <li><span class="src src-external">external</span> <code>books[i].AuthorName</code> and <code>FirstPublishYear</code> come from the <code>Book</code> struct. The version in the Data from the web chapter is my own and has no language field, so the languages panel needs a field added.</li>
+  </ul>
+</section>
+<section class="note" id="fyne-images">
+  <span class="tag">gui</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Displaying an image</h2>
+
+  <p>
+    Fyne treats an image as a widget, so you can put it in a container
+    like any other widget and then add the container to the window.
+    There are several <code>NewImageFromXXX</code> functions in the
+    <code>canvas</code> package, and the <strong>fill mode</strong>
+    controls how it is displayed.
+  </p>
+  <h3>ImageFillOriginal</h3>
+  <pre><code>flagPict := canvas.NewImageFromFile("flag.png")
+flagPict.FillMode = canvas.ImageFillOriginal
+flagPanel := container.NewHBox(flagPict)</code></pre>
+  <p>Keeps the original size and aspect ratio, which could be quite large for some images.</p>
+  <h3>ImageFillContain</h3>
+  <pre><code>flagPict := canvas.NewImageFromFile("flag.png")
+flagPict.SetMinSize(fyne.NewSize(100, 60))
+flagPict.FillMode = canvas.ImageFillContain
+flagPanel := container.NewHBox(flagPict)</code></pre>
+  <ul>
+    <li>Keeps the aspect ratio.</li>
+    <li><code>MinSize</code> defaults to (0, 0), so inside a border layout the image won't be drawn at all without a new <code>MinSize</code>. That's what <code>SetMinSize</code> is for here.</li>
+  </ul>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-concurrency" data-title="Concurrency" data-num="12">
+      <header class="chapter-head"><span class="chapter-num">Chapter 12</span><h2 class="chapter-title">Concurrency</h2><p>Part 5 slides, Learning Go ch. 12</p></header>
+<section class="note" id="conc-intro">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>What concurrency is</h2>
+
+  <p>
+    <strong>Concurrency</strong>, in programming, means breaking a
+    program (process) up into independent, communicating sub-processes.
+    Those pieces <em>may or may not</em> end up running in parallel,
+    which depends on the hardware and the algorithm.
+  </p>
+  <h3>Processes and threads</h3>
+  <ul>
+    <li><strong>Process:</strong> the code and data for a running program. In most programs that includes virtual memory, which pretends to be contiguous and to start from address <code>0x0</code>.</li>
+    <li><strong>Thread:</strong> a "lightweight" process. It has its own stack but shares heap memory with the other threads.</li>
+  </ul>
+  <p>Reading for this part: the concurrency chapter (chapter 12) of <em>Learning Go</em>.</p>
+</section>
+<section class="note" id="conc-costs">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Concurrency has costs</h2>
+
+  <p>
+    The instructor's warning: <strong>don't overuse concurrency in real
+    life.</strong> A lot of people did in the early days of Go. Not
+    everyone is Google, and not everything should be a microservice.
+    Not everything needs to be a concurrent process. A good question
+    for any design is what makes a problem a good fit for concurrency and
+    what doesn't.
+  </p>
+  <h3>Comparing the costs</h3>
+  <ul>
+    <li><strong>A function call:</strong> push a stack frame for the function, and move values from registers to the stack and back.</li>
+    <li><strong>A context switch</strong> (the operating systems sense): all of the above, plus likely adjusting the cache to reflect the working memory of the new program, and working with the new program's stack.</li>
+  </ul>
+  <h3>What concurrency adds</h3>
+  <ul>
+    <li>Context switching, depending on the thread model.</li>
+    <li>Some threads being blocked waiting on output from others.</li>
+    <li>The cost of the communication mechanisms between threads.</li>
+  </ul>
+  <p>
+    Some of the class examples ignore this to keep the examples small,
+    but keep it in mind for real life.
+  </p>
+</section>
+<section class="note" id="conc-threads">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Kernel threads vs green threads, and goroutines</h2>
+
+  <h3>Kernel threads vs green threads</h3>
+  <ul>
+    <li><strong>Kernel threads</strong> are managed by the OS, and that includes the context swap (swapping values out of registers).</li>
+    <li><strong>Green threads</strong> are done in user space. They emulate OS threads. They can't do parallelism properly, but they are useful for async tasks (waiting on I/O and so on), and there is no context switch either.</li>
+  </ul>
+  <h3>Goroutines</h3>
+  <p>
+    Go's threads are called <strong>goroutines</strong>, a pun on
+    co-routines. When a Go process starts, the Go runtime spawns some
+    number of kernel threads, then spawns green threads inside them.
+    Each goroutine starts with a very small stack, so there is very
+    little overhead until you need it. That makes them very efficient:
+    1000 goroutines is possible without making a modern computer thrash.
+  </p>
+  <p>
+    <span class="src src-external">external</span> Go's runtime schedules its goroutines across several kernel
+    threads, which is how Go gets real parallelism even though the
+    goroutines themselves are lightweight green-thread style.
+  </p>
+</section>
+<section class="note" id="conc-go-keyword">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>The go keyword</h2>
+
+  <p>
+    Turn any function call into a goroutine by putting the
+    <code>go</code> keyword in front of it.
+  </p>
+  <ul>
+    <li>Pass parameters as usual.</li>
+    <li><strong>No return values are possible.</strong></li>
+    <li>Goroutines don't print to standard output without extra work.</li>
+  </ul>
+  <p>The slide starts with a normal loop:</p>
+  <pre><code>func main() {
+    for i := 1; i &lt;= 5; i++ {
+        fmt.Println("i =", 100/i)
+    }
+}</code></pre>
+  <p>Then makes the print a goroutine and asks what happens:</p>
+  <pre><code>func main() {
+    for i := 1; i &lt;= 5; i++ {
+        go fmt.Println("i =", 100/i)
+    }
+}</code></pre>
+  <p>
+    Nothing is printed. <span class="src src-external">external</span> I ran it to check, and it prints nothing.
+    <code>main</code> reaches the end of its loop and returns right away,
+    and when <code>main</code> returns the whole program exits, so the
+    goroutines never get a chance to run. The next example uses
+    <code>time.Sleep</code> to hold <code>main</code> open, which is a
+    stopgap and not a real fix.
+  </p>
+</section>
+<section class="note" id="conc-bad-write">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>The problem: writing from many goroutines</h2>
+
+  <p>
+    The slide asks what the problem is when we write concurrently. The
+    example launches a goroutine for each line it wants to write, all
+    appending to the same file:
+  </p>
+  <pre><code>package main
+
+import (
+    "fmt"
+    "os"
+    "time"
+)
+
+func main() {
+    for i := 1; i &lt;= 5; i++ {
+        go badWrite("output.txt", fmt.Sprintf("the number for this write is %d", 100/i))
+        fmt.Println(fmt.Sprintf("the number for this write is %d", 100/i))
+    }
+    time.Sleep(10 * time.Second) // sleep to make sure the goroutines run before the program ends
+}
+
+func badWrite(fileName string, text string) {
+    file, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        fmt.Println("Error opening file:", err)
+    }
+    _, err = file.WriteString(fmt.Sprintf("%s\n", text)) // first return is the number of bytes written
+    if err != nil {
+        fmt.Println("Error writing to file:", err)
+    }
+    file.Close()
+}</code></pre>
+  <p>
+    The goroutines all race to open and write to <code>output.txt</code>,
+    so the lines can land in any order. <span class="src src-external">external</span> When I ran it, the console
+    printed the numbers in order (100, 50, 33, 25, 20) but the file came
+    out as 20, 33, 25, 100, 50. The order changes from run to run.
+  </p>
+  <p>
+    This is the <strong>synchronization</strong> problem, and the
+    <code>time.Sleep</code> is only there so the program doesn't end
+    before the goroutines finish.
+  </p>
+</section>
+<section class="note" id="conc-traditional">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>The traditional solutions</h2>
+
+  <p>The traditional answers to the synchronization problem:</p>
+  <ul>
+    <li><strong>Mutexes</strong></li>
+    <li><strong>Semaphores</strong></li>
+    <li><strong>Monitors or intrinsic locks</strong> (used in Java)</li>
+  </ul>
+  <p>
+    With proper synchronization, a thread that wants to write to a place
+    that is already busy gets put to sleep: the sender/writer thread
+    goes to sleep until the place is free.
+  </p>
+  <p>
+    The slide also has a "danger of poorly synchronized code" prompt, with
+    the discussion left to class.
+  </p>
+</section>
+<section class="note" id="conc-channels">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Channels</h2>
+
+  <p>
+    Go's solution to communication between goroutines is the
+    <strong>channel</strong>. A channel wraps synchronization and data
+    sharing, and it can optionally be buffered.
+  </p>
+  <h3>Making one</h3>
+  <pre><code>MyChannelVar := make(chan string)</code></pre>
+  <p>
+    <code>make</code>'s first argument is the <code>chan</code> keyword,
+    and the second is the type of thing you can send on the channel.
+    That is usually a common type like <code>int</code> or
+    <code>string</code>, but it can be an arbitrary type.
+  </p>
+  <h3>Reading and writing</h3>
+  <p>
+    Use the <code>&lt;-</code> operator (less-than symbol immediately
+    followed by a minus) to read or write.
+  </p>
+  <pre><code>text := &lt;-MyChannelVar          // read: arrow on the left of the channel
+MyChannelVar &lt;- "the text here"  // write: arrow on the right of the channel</code></pre>
+  <p>
+    <span class="src src-external">external</span> On an unbuffered channel, a read or write puts the goroutine to
+    sleep until another goroutine does the inverse. If every goroutine
+    is asleep and blocked, Go panics with a <strong>deadlock</strong>.
+  </p>
+  <p>
+    <span class="src src-external">external</span> A one-goroutine example, checked by running it:
+  </p>
+  <pre><code>func main() {
+    ch := make(chan string)
+    ch &lt;- "hello" // nothing is reading, so this goroutine sleeps forever
+    fmt.Println(&lt;-ch)
+}</code></pre>
+  <pre><code>fatal error: all goroutines are asleep - deadlock!
+
+goroutine 1 [chan send]:
+main.main()</code></pre>
+</section>
+<section class="note" id="conc-directional">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Directional channels</h2>
+
+  <p>
+    <code>make</code> creates a bi-directional channel, but often one
+    function only reads from it and another only writes. Say so by
+    putting the <code>&lt;-</code> operator next to <code>chan</code>
+    in the parameter type:
+  </p>
+  <pre><code>func betterWrite(fileName string, receiver &lt;-chan string) {</code></pre>
+  <p>
+    That parameter can only be read from, and the compiler enforces it.
+    <span class="src src-external">external</span> Trying to send on a <code>&lt;-chan string</code> parameter is a
+    compile error (checked by compiling it):
+  </p>
+  <pre><code>invalid operation: cannot send to receive-only channel r (variable of type &lt;-chan string)</code></pre>
+  <ul>
+    <li><code>&lt;-chan string</code>: receive-only (read from it).</li>
+    <li><span class="src src-external">external</span> <code>chan&lt;- string</code>: send-only (write to it).</li>
+  </ul>
+</section>
+<section class="note" id="conc-better-write">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Fixing it: betterWrite</h2>
+
+  <p>
+    The in-class task: replace <code>badWrite</code> with a
+    <code>betterWrite</code> that uses a channel so the data ends up in
+    the file in the right order. The steps from the slide:
+  </p>
+  <ul>
+    <li>Take the existing <code>main</code> and <code>make</code> a channel.</li>
+    <li>Call the new function as a goroutine, passing the channel and a new filename.</li>
+    <li>Write the data to the channel in the loop, after starting the goroutine.</li>
+    <li>Write the new function with the <code>betterWrite</code> signature from the last slide. It does mostly the same as <code>badWrite</code>, but gets the text to write from the channel.</li>
+  </ul>
+  <p>
+    My version of it, which also uses the next two ideas (range over the
+    channel, then close it):
+  </p>
+  <pre><code>func main() {
+    channel := make(chan string)
+    go betterWrite("output2.txt", channel)
+    for i := 1; i &lt;= 5; i++ {
+        channel &lt;- fmt.Sprintf("the number for this write is %d", 100/i)
+    }
+    close(channel)
+    time.Sleep(time.Second)
+}
+
+func betterWrite(fileName string, receiver &lt;-chan string) {
+    file, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        fmt.Println("Error opening file:", err)
+        return
+    }
+    defer file.Close()
+    for text := range receiver {
+        _, err = file.WriteString(text + "\n")
+        if err != nil {
+            fmt.Println("Error writing to file:", err)
+        }
+    }
+}</code></pre>
+  <p>
+    <span class="src src-external">external</span> Checked by running it: the file came out as 100, 50, 33, 25, 20,
+    in order, because one goroutine does all the writing and the channel
+    hands it the lines in the order they were sent. That is the fix: the
+    channel serializes the writes.
+  </p>
+</section>
+<section class="note" id="conc-range-close">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>For-range and closing channels</h2>
+
+  <p>
+    Often, rather than many goroutines listening to a channel, you'll
+    have <strong>one goroutine that keeps listening</strong> for as long
+    as the channel is open. The for-range loop reads from the channel
+    until it is closed.
+  </p>
+  <pre><code>for text := range receiver {
+    // runs once per value, until the channel is closed
+}
+
+close(MyChannelVar)
+
+text, ok := &lt;-receiver  // ok is false if the channel was closed and empty</code></pre>
+  <p>If you read until closed, someone has to close it.</p>
+  <ul>
+    <li>Most channels are written to from one goroutine and read from another. The <strong>writer should close the channel</strong>.</li>
+    <li>Once a channel is closed, a read gives the zero value and is fine. Use the <strong>ok version</strong> to tell whether the value was actually sent or is just the zero value.</li>
+    <li>Writing to a closed channel panics (the slide points to the chart on page 293 of the book).</li>
+  </ul>
+  <p>
+    <span class="src src-external">external</span> Checked by running this (buffered channel so the first send
+    doesn't block):
+  </p>
+  <pre><code>ch := make(chan string, 1)
+ch &lt;- "one"
+close(ch)
+text, ok := &lt;-ch   // "one" true
+text, ok = &lt;-ch    // "" false
+ch &lt;- "two"        // panic: send on closed channel</code></pre>
+</section>
+<section class="note" id="conc-select">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Select</h2>
+
+  <p>
+    <code>select</code> reads from <strong>one of several channels</strong>,
+    whichever has a value available. It looks a bit like
+    <code>switch</code>, but the cases are channel operations and there
+    are no <code>{}</code> blocks around each case.
+  </p>
+  <ul>
+    <li>If more than one case is ready, Go picks one <strong>randomly</strong>.</li>
+    <li>One <code>select</code> handles one value. Often you want to repeat the check, so put it in a loop, and <strong>make sure the loop has a way out</strong>: a <code>break</code>, or a WaitGroup (next section). The slide's looping version leaves that out ("which I don't have here").</li>
+  </ul>
+  <div class="code-tabs">
+    <div class="code-tab-buttons">
+      <button class="code-tab-btn active" data-tab="sel-slide">from the slide</button>
+      <button class="code-tab-btn" data-tab="sel-mine">runnable version</button>
+    </div>
+    <div class="code-tab-panel active" data-panel="sel-slide">
+<pre><code>func spawn() {
+    result := 0
+    channel1 := make(chan int)
+    channel2 := make(chan int)
+    channel3 := make(chan int)
+    go calculator(channel1)
+    go calculator(channel2)
+    go calculator(channel3)
+    select {
+    case partialResult := &lt;-channel1:
+        result += partialResult
+        fmt.Println("Partial result from channel 1:", partialResult)
+    case partialresult2 := &lt;-channel2:
+        result += partialresult2
+    case partial3 := &lt;-channel3:
+        result += partial3
+        fmt.Println("Partial result from channel 3:", partial3)
+    }
+}</code></pre>
+    </div>
+    <div class="code-tab-panel" data-panel="sel-mine">
+<pre><code>func calculator(out chan&lt;- int, n int) { // my stand-in: the slides never show calculator
+    time.Sleep(time.Duration(n) * 50 * time.Millisecond)
+    out &lt;- n * 10
+}
+
+func main() {
+    result := 0
+    channel1 := make(chan int)
+    channel2 := make(chan int)
+    channel3 := make(chan int)
+    go calculator(channel1, 1)
+    go calculator(channel2, 2)
+    go calculator(channel3, 3)
+    for received := 0; received &lt; 3; received++ { // exit condition: all 3 results in
+        select {
+        case partialResult := &lt;-channel1:
+            result += partialResult
+            fmt.Println("Partial result from channel 1:", partialResult)
+        case partialResult2 := &lt;-channel2:
+            result += partialResult2
+            fmt.Println("Partial result from channel 2:", partialResult2)
+        case partial3 := &lt;-channel3:
+            result += partial3
+            fmt.Println("Partial result from channel 3:", partial3)
+        }
+    }
+    fmt.Println("Total:", result)
+}</code></pre>
+<pre><code>Partial result from channel 1: 10
+Partial result from channel 2: 20
+Partial result from channel 3: 30
+Total: 60</code></pre>
+    </div>
+  </div>
+  <p>
+    <span class="src src-external">external</span> The slides never show <code>calculator</code>, so the runnable
+    tab uses a stand-in that sleeps a different time in each goroutine,
+    which makes the arrival order predictable. The counter in the loop
+    is the exit condition. Checked by running it.
+  </p>
+</section>
+<section class="note" id="conc-waitgroup">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>WaitGroups</h2>
+
+  <p>
+    Use a <code>sync.WaitGroup</code> when one goroutine needs to wait
+    for several others to finish. You could close channels in each
+    goroutine, but a WaitGroup is the tool when you want the channels to
+    stay open.
+  </p>
+  <ul>
+    <li><code>Add</code>: increments the wait counter.</li>
+    <li><code>Done</code>: decrements the wait counter.</li>
+    <li><code>Wait</code>: blocks the goroutine until the counter is 0 again.</li>
+  </ul>
+  <pre><code>func main() {
+    var wg sync.WaitGroup
+
+    for i := 1; i &lt;= 3; i++ {
+        wg.Add(1) // increment the counter before starting the goroutine
+
+        go func(id int) {
+            defer wg.Done() // decrement when this goroutine finishes
+
+            fmt.Printf("Worker %d starting\n", id)
+            time.Sleep(time.Second)
+            fmt.Printf("Worker %d done\n", id)
+        }(i)
+    }
+
+    wg.Wait() // block until the counter is zero
+    fmt.Println("All workers completed")
+}</code></pre>
+  <p>
+    The slide credits an example from oneuptime.com's Go WaitGroup post.
+    <span class="src src-external">external</span> Checked by running it. The start and finish lines come out in a
+    different order each run, but "All workers completed" is always
+    last. One run:
+  </p>
+  <pre><code>Worker 3 starting
+Worker 1 starting
+Worker 2 starting
+Worker 2 done
+Worker 3 done
+Worker 1 done
+All workers completed</code></pre>
+  <p>
+    The <code>defer wg.Done()</code> ties back to the defer note: it
+    makes sure the counter goes down however the function exits.
+  </p>
+</section>
+<section class="note" id="conc-mutex">
+  <span class="tag">concurrency</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Mutexes, and where to read more</h2>
+
+  <p>
+    Go does provide a traditional mutex (covered in chapter 12 of the
+    book). The usual advice is to <strong>use channels</strong>. A mutex
+    is the right tool in the occasional case where many goroutines check
+    a shared value but don't consume it.
+  </p>
+  <h3>Reading</h3>
+  <ul>
+    <li>Chapter 12 of <em>Learning Go</em>.</li>
+    <li><code>go101.org/article/channel.html</code></li>
+    <li><code>go.dev/tour/concurrency/1</code> (follow the links to the next few pages)</li>
+    <li><code>gobyexample.com/channels</code></li>
+  </ul>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-wasm" data-title="WebAssembly" data-num="13">
+      <header class="chapter-head"><span class="chapter-num">Chapter 13</span><h2 class="chapter-title">WebAssembly</h2><p>Part 6 slides: WASM, WASI, go:embed</p></header>
+<section class="note" id="wasm-history">
+  <span class="tag">webassembly</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Why WebAssembly exists</h2>
+
+  <h3>JavaScript and its limits</h3>
+  <p>
+    Netscape needed a scripting language to make the web more dynamic,
+    and that became JavaScript. It was the only choice, so it became a
+    big deal (Node came along too). Its perceived limitations:
+  </p>
+  <ul>
+    <li><strong>Dynamically typed:</strong> popular a decade or so ago, but it turns out not to scale. TypeScript is one of the most popular ECMAScript-standard languages.</li>
+    <li><strong>Slow:</strong> for a lot of modern cloud software this doesn't matter, because the latency of, say, a Boston to Singapore database query is higher than the interpreted-language slowdown.</li>
+  </ul>
+  <p>
+    When it does matter: <strong>games</strong> and <strong>local
+    computation-heavy work</strong>.
+  </p>
+  <h3>Timeline</h3>
+  <ul>
+    <li><strong>2013, asm.js:</strong> a strict subset of JavaScript, designed so statically typed languages with manual memory management could be cross-compiled to a subset of the JavaScript VM. It gave really good performance. <span class="src src-external">external</span> C and C++ are the usual source languages.</li>
+    <li><strong>2015:</strong> asm.js evolved into WebAssembly.</li>
+    <li><strong>2017:</strong> the MVP was out and implemented in all the major browsers. It is a stack-based virtual machine compile target for languages with manual memory management. Go has to compile the Go runtime into the WebAssembly binary.</li>
+    <li><strong>2025, WebAssembly 3.0:</strong> a garbage collector available in the stack machine itself, and a 64-bit mode (before this, 4 GB was the maximum addressable memory). Still coming or behind feature flags: concurrency and "wide" (128-bit) arithmetic.</li>
+  </ul>
+</section>
+<section class="note" id="wasm-wasi">
+  <span class="tag">webassembly</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>WASM security and WASI</h2>
+
+  <p>
+    WebAssembly is downloaded from the net and run automatically in your
+    browser, which raises the question of what could go wrong. The
+    class brainstormed what a program could do if it could open files on
+    your computer: uploads, an encryption lock, LLM training data.
+  </p>
+  <h3>The browser: sandboxed</h3>
+  <ul>
+    <li>WebAssembly in the browser locks out all local file access.</li>
+    <li>It gets its data via HTTP, or with <code>go:embed</code> (its own note below).</li>
+    <li>It runs in a sandboxed runtime.</li>
+  </ul>
+  <h3>WASI: outside the browser</h3>
+  <ul>
+    <li><strong>WASI</strong> is the WebAssembly System Interface, an attempt to use WebAssembly outside the browser.</li>
+    <li>It runs on the local machine, but you can set very strict limits on what it is allowed to access.</li>
+    <li>It could help with an obscure hardware and OS combination that Go doesn't support but WASI might. It's envisioned for IoT a lot.</li>
+  </ul>
+</section>
+<section class="note" id="wasm-go">
+  <span class="tag">webassembly</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Go and WebAssembly</h2>
+
+  <p>
+    Go was <em>not</em> the language Mozilla had in mind. Mozilla
+    created Rust and thought it was an ideal WebAssembly language,
+    because of its manual memory management. When Go is compiled to WebAssembly, its runtime is
+    compiled in too, so <strong>an application is a minimum of about
+    2 MB</strong>. That is a poor fit for a web commerce store and pretty
+    fine for a 3D game.
+  </p>
+  <p>
+    <span class="src src-external">external</span> Checked: a hello world built with Go 1.24.7 for
+    <code>js/wasm</code> came out at 2.4 MB.
+  </p>
+  <ul>
+    <li>Pure Go translates to WebAssembly pretty easily.</li>
+    <li>Go with foreign dependencies (Qt, GTK) is harder.</li>
+  </ul>
+  <h3>Go 1.21 (August 2023)</h3>
+  <ul>
+    <li>The new <code>go:wasmimport</code> directive can be used in Go programs to import functions from the WebAssembly host.</li>
+    <li>The Go scheduler interacts much more efficiently with the JavaScript event loop, especially in applications that block frequently on asynchronous events.</li>
+    <li>An experimental port to WASI Preview 1 (<code>GOOS=wasip1</code>, <code>GOARCH=wasm</code>).</li>
+    <li>Because of the new <code>wasip1</code> value, files named <code>*_wasip1.go</code> are ignored by Go tools unless that GOOS is in use. Existing files with that pattern need renaming.</li>
+  </ul>
+</section>
+<section class="note" id="wasm-cross">
+  <span class="tag">webassembly</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Cross compiling</h2>
+
+  <p>
+    <strong>Cross compiling</strong> means building an executable for
+    one platform on a different platform. The slide's example is using
+    Windows on x86 to build a program for a Mac on ARM.
+  </p>
+  <p>
+    WebAssembly (for now at least) <strong>always</strong> gets cross
+    compiled, because nobody runs WebAssembly as their actual hardware
+    architecture. In Go that shows up as two environment variables,
+    <code>GOOS=js</code> and <code>GOARCH=wasm</code>.
+  </p>
+</section>
+<section class="note" id="wasm-build">
+  <span class="tag">webassembly</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Building a Go program for the browser</h2>
+
+  <h3>From GoLand</h3>
+  <ol>
+    <li>Open Settings (<code>File &gt; Settings</code>, or the GoLand menu's Settings on a Mac).</li>
+    <li>Open <strong>Go</strong>, then <strong>Build Tags</strong>.</li>
+    <li>Set OS to <code>js</code> and Arch to <code>wasm</code>. Now you are building for WebAssembly, and the executable will no longer run on your local system as before.</li>
+    <li>Go to the <strong>Run</strong> menu, then <strong>Edit Configurations</strong>, and hit <code>+</code> to add a new configuration.</li>
+    <li>Give it a name (the instructor puts "wasm" in the name).</li>
+    <li>Set the run kind to <strong>directory</strong> and <strong>uncheck "run after build"</strong>.</li>
+    <li>Add two environment variables: <code>GOOS=js;GOARCH=wasm</code>.</li>
+    <li>Set the go tool arguments to <code>-o &lt;your program&gt;.wasm</code> and hit OK.</li>
+    <li>Run the new configuration. Nothing runs this time, but there is now a <code>.wasm</code> file in your folder. Move it to your web project folder.</li>
+  </ol>
+  <h3>From the command line</h3>
+  <p>Set the <code>GOOS</code> and <code>GOARCH</code> environment variables, for example (from the doc the instructor posted to the news):</p>
+  <pre><code>GOOS=js GOARCH=wasm go build -o ../../assets/json.wasm &lt;your file name&gt;</code></pre>
+  <h3>Getting the page ready</h3>
+  <ol>
+    <li>Make a new folder for your running web project.</li>
+    <li>Copy <code>wasm_exec.html</code> from <code>&lt;path to go&gt;/misc/wasm</code> into it. You'll use it as your <code>index.html</code>.</li>
+    <li>In that file, replace <code>test.wasm</code> with the name of your wasm file.</li>
+  </ol>
+  <p>
+    <span class="src src-external">external</span> On the Go 1.24 install I checked, <code>wasm_exec.html</code>
+    loads <code>../../lib/wasm/wasm_exec.js</code>, which is a path inside
+    the Go install. Once the HTML file is copied out, that path breaks, so
+    copy <code>wasm_exec.js</code> from <code>&lt;path to go&gt;/lib/wasm</code>
+    into the project folder too and change the <code>script</code> tag to
+    <code>wasm_exec.js</code>.
+  </p>
+</section>
+<section class="note" id="wasm-server">
+  <span class="tag">webassembly</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>Serving it: the simplest web server</h2>
+
+  <p>
+    Now you need to web serve the folder. For real deployment to lots of
+    people you would use a heavy-duty web server like nginx. For
+    development, the instructor pulled a simple one from a tutorial
+    (linked in the code below).
+  </p>
+  <pre><code>package main
+
+// https://itnext.io/webassemply-with-golang-by-scratch-e05ec5230558
+
+import (
+    "log"
+    "net/http"
+)
+
+const (
+    AddSrv       = ":8080"
+    TemplatesDir = "."
+)
+
+func main() {
+    log.Printf("listening on %q...", AddSrv)
+    fileSrv := http.FileServer(http.Dir(TemplatesDir))
+    if err := http.ListenAndServe(AddSrv, fileSrv); err != nil {
+        log.Fatal(err)
+    }
+}</code></pre>
+  <ol>
+    <li>Put it in a single file and compile it to an executable.</li>
+    <li>Run the compiled web server in the folder with your <code>index.html</code> and your <code>.wasm</code> file.</li>
+    <li>Go to <code>http://localhost:8080</code> and see the program in the browser.</li>
+  </ol>
+  <p>
+    <span class="src src-external">external</span> I built it and fetched a file from it with curl, and it served
+    the file with a 200. <code>http.FileServer</code> serves the folder
+    given to <code>http.Dir</code>, so <code>"."</code> is whatever
+    folder you run it from.
+  </p>
+  <p>
+    The class tried this with the Fyne project from the last topic.
+  </p>
+</section>
+<section class="note" id="go-embed">
+  <span class="tag">embed</span>
+  <span class="src src-slides">slideshow</span>
+  <h2>go:embed</h2>
+
+  <p>
+    <code>go:embed</code> (added in Go 1.16, 2021) lets you embed files
+    directly into the Go program, the final executable, so all you have to
+    give someone is a single executable file. It works for text files,
+    images, and so on.
+  </p>
+  <h3>Using it</h3>
+  <p>
+    Put the <code>//go:embed</code> directive in a comment immediately
+    above a global (or at least package-wide) variable, which will hold
+    the embedded assets.
+  </p>
+  <pre><code>//go:embed assets/*
+var EmbeddedAssets embed.FS</code></pre>
+  <p>
+    That takes everything in the <code>assets</code> subfolder of the
+    project and treats it as a file system.
+  </p>
+  <h3>Reading from it</h3>
+  <p>The slide's function, and how it's called from <code>main</code>:</p>
+  <pre><code>data := loadEmbeddedTextFile("data/sampleData.json")
+
+func loadEmbeddedTextFile(name string) []string {
+    embeddedFile, err := EmbeddedAssets.ReadFile(name) // reads the file into a byte slice
+    if err != nil {
+        log.Fatal("Error:", err) // will kill the program after logging the error
+    }
+    return strings.Split(string(embeddedFile), "\n")
+}</code></pre>
+  <p>
+    <span class="src src-external">external</span> Checked by running a version of it. The embed pattern has to
+    match files that actually exist (a pattern that matches nothing is a
+    compile error), and the <code>embed</code> package has to be imported
+    even though you only use it for its type. If the file ends with a
+    newline, <code>strings.Split</code> returns an empty last element,
+    so trim it first if that matters.
+  </p>
+  <p>
+    This is how a browser WebAssembly program gets data despite having
+    no local file access: embed it in the binary.
+  </p>
+</section>
+    </div>
+
+    <div class="chapter" id="ch-industry" data-title="CS in industry" data-num="14">
+      <header class="chapter-head"><span class="chapter-num">Chapter 14</span><h2 class="chapter-title">CS in industry</h2><p>LLMs, jobs, podcast, PIPs</p></header>
 <section class="note" id="llm-discussion">
   <span class="tag">industry</span>
   <span class="src src-slides">slideshow</span>
@@ -2560,8 +3579,8 @@ import (
 </section>
     </div>
 
-    <div class="chapter" id="ch-projects" data-title="Projects and examples" data-num="12">
-      <header class="chapter-head"><span class="chapter-num">Chapter 12</span><h2 class="chapter-title">Projects and examples</h2><p>In-class work and Project 1</p></header>
+    <div class="chapter" id="ch-projects" data-title="Projects and examples" data-num="15">
+      <header class="chapter-head"><span class="chapter-num">Chapter 15</span><h2 class="chapter-title">Projects and examples</h2><p>In-class work and Project 1</p></header>
     <section class="note" id="first-project">
       <span class="tag">example</span>
       <span class="src src-inclass">in-class assignment</span>
@@ -2912,8 +3931,8 @@ Quitting Program!</code></pre>
 </section>
     </div>
 
-    <div class="chapter" id="ch-quiz" data-title="Quiz reviews" data-num="13">
-      <header class="chapter-head"><span class="chapter-num">Chapter 13</span><h2 class="chapter-title">Quiz reviews</h2><p>Quiz 2 (22/30) and Quiz 3 (21/30), corrected</p></header>
+    <div class="chapter" id="ch-quiz" data-title="Quiz reviews" data-num="16">
+      <header class="chapter-head"><span class="chapter-num">Chapter 16</span><h2 class="chapter-title">Quiz reviews</h2><p>Quiz 2 (22/30) and Quiz 3 (21/30), corrected</p></header>
 <section class="note" id="quiz2-overview">
   <span class="tag">quiz</span>
   <span class="src src-quiz">quiz</span>
@@ -3149,8 +4168,8 @@ fmt.Println(p.calculatePay(), q.calculatePay()) // 200 60</code></pre>
 </section>
     </div>
 
-    <div class="chapter" id="ch-practice" data-title="Practice questions" data-num="14">
-      <header class="chapter-head"><span class="chapter-num">Chapter 14</span><h2 class="chapter-title">Practice questions</h2><p>Twenty-one traced questions with answers</p></header>
+    <div class="chapter" id="ch-practice" data-title="Practice questions" data-num="17">
+      <header class="chapter-head"><span class="chapter-num">Chapter 17</span><h2 class="chapter-title">Practice questions</h2><p>Twenty-one traced questions with answers</p></header>
     <section class="note" id="practice-intro">
       <span class="tag">practice</span>
       <span class="src src-practice">practice question</span>
